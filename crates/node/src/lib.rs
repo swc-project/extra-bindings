@@ -8,7 +8,6 @@ mod util;
 use std::{backtrace::Backtrace, env, panic::set_hook};
 
 use anyhow::{bail, Context};
-use binding_commons::{deserialize_json, get_deserialized, MapErr};
 use napi::{bindgen_prelude::*, Task};
 use serde::{Deserialize, Serialize};
 use swc_common::FileName;
@@ -16,6 +15,7 @@ use swc_css_codegen::{
     writer::basic::{BasicCssWriter, BasicCssWriterConfig, IndentType, LineFeed},
     CodeGenerator, CodegenConfig, Emit,
 };
+use swc_nodejs_common::{deserialize_json, get_deserialized, MapErr};
 
 use crate::util::try_with;
 
