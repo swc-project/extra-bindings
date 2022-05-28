@@ -33,6 +33,7 @@ swc_css_ast = "0.93.1"
 swc_css_codegen = "0.102.0"
 swc_css_minifier = "0.67.0"
 swc_css_parser = "0.101.3"
+swc_error_reporters = "0.2.0"
 swc_nodejs_common = "0.0.1"
 tracing = { version = "0.1.32", features = ["release_max_level_info"] }
 tracing-subscriber = { version = "0.3.9", features = ["env-filter"] }
