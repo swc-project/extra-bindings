@@ -1,0 +1,8 @@
+[workspace]
+members = [
+  "crates/node"
+]
+
+[profile.release]
+codegen-units = 1
+lto = "fat"
