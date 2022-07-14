@@ -1,12 +1,9 @@
 {
   "name": "@swc/css",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Super-fast alternative for postcss",
   "homepage": "https://swc.rs",
   "main": "./index.js",
-  "bin": {
-    "swcx": "run_swcx.js"
-  },
   "author": "강동윤 <kdy1997.dev@gmail.com>",
   "license": "Apache-2.0",
   "keywords": [
