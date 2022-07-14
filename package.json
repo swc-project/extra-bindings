@@ -1,0 +1,98 @@
+{
+  "name": "@swc/css",
+  "version": "0.0.1",
+  "description": "Super-fast alternative for postcss",
+  "homepage": "https://swc.rs",
+  "main": "./index.js",
+  "bin": {
+    "swcx": "run_swcx.js"
+  },
+  "author": "강동윤 <kdy1997.dev@gmail.com>",
+  "license": "Apache-2.0",
+  "keywords": [
+    "swc",
+   "css"
+  ],
+  "engines": {
+    "node": ">=10"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/swc-project/swc.git"
+  },
+  "bugs": {
+    "url": "https://github.com/swc-project/swc/issues"
+  },
+  "napi": {
+    "name": "css",
+    "triples": {
+      "defaults": true,
+      "additional": [
+        "x86_64-unknown-linux-musl",
+        "x86_64-unknown-freebsd",
+        "i686-pc-windows-msvc",
+        "aarch64-unknown-linux-gnu",
+        "armv7-unknown-linux-gnueabihf",
+        "aarch64-apple-darwin",
+        "aarch64-linux-android",
+        "aarch64-unknown-linux-musl",
+        "aarch64-pc-windows-msvc",
+        "armv7-linux-androideabi"
+      ]
+    }
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
+  },
+  "scripts": {
+    "prepare": "husky install && git config feature.manyFiles true",
+    "artifacts": "napi artifacts --dist scripts/npm",
+    "prepublishOnly": "tsc -d && napi prepublish -p scripts/npm --tagstyle npm",
+    "pack": "wasm-pack",
+    "build:ts": "tsc -d",
+    "build:wasm": "npm-run-all \"pack -- build ./crates/wasm --scope swc {1} -t {2} --features plugin\" --",
+    "build": "tsc -d && napi build --platform --cargo-name binding_core_node --js ./node-swc/src/binding.js --dts ./node-swc/src/binding.d.ts -p binding_core_node --release",
+    "build:dev": "tsc -d && napi build --platform --cargo-name binding_core_node --js ./node-swc/src/binding.js --dts ./node-swc/src/binding.d.ts -p binding_core_node",
+    "test": "cross-env NODE_OPTIONS='--experimental-vm-modules' jest --config ./node-swc/jest.config.js",
+    "version": "napi version -p scripts/npm"
+  },
+  "lint-staged": {
+    "*.toml": [
+      "taplo format"
+    ],
+    "*.rs": [
+      "rustfmt --"
+    ],
+    "!(**/tests/**/*)*.js": [
+      "prettier --write"
+    ],
+    "!(**/tests/**/*)*.ts": [
+      "prettier --write"
+    ],
+    "!(**/tests/**/*)*.jsx": [
+      "prettier --write"
+    ],
+    "!(**/tests/**/*)*.tsx": [
+      "prettier --write"
+    ]
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "^2.10.0",
+    "@taplo/cli": "^0.3.2",
+    "@types/jest": "^28.1.4",
+    "@types/node": "^14.14.41",
+    "cross-env": "^7.0.3",
+    "cspell": "^5.12.3",
+    "husky": "^7.0.2",
+    "jest": "^28.1.2",
+    "lint-staged": "^12.3.6",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^2.6.2",
+    "typescript": "^4.5.2"
+  },
+  "funding": {
+    "type": "opencollective",
+    "url": "https://opencollective.com/swc"
+  }
+}
