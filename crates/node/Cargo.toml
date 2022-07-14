@@ -1,0 +1,39 @@
+[package]
+authors = ["강동윤 <kdy1997.dev@gmail.com>"]
+build = "build.rs"
+edition = "2021"
+exclude = ["artifacts.json", "index.node"]
+license = "Apache-2.0"
+name = "node"
+publish = false
+version = "0.1.0"
+
+[lib]
+bench = false
+crate-type = ["cdylib"]
+
+[features]
+
+[build-dependencies]
+napi-build = { version = "1" }
+
+[dependencies]
+anyhow = "1"
+napi = { version = "2", default-features = false, features = [
+  "napi3",
+  "serde-json",
+] }
+napi-derive = { version = "2", default-features = false, features = [
+  "type-def",
+] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+swc_common = { version = "0.24.1", features = ["concurrent", "sourcemap"] }
+swc_css_ast = "0.99.0"
+swc_css_codegen = "0.109.0"
+swc_css_minifier = "0.74.0"
+swc_css_parser = "0.108.0"
+swc_error_reporters = "0.8.0"
+swc_nodejs_common = "0.0.1"
+tracing = { version = "0.1.32", features = ["release_max_level_info"] }
+tracing-subscriber = { version = "0.3.9", features = ["env-filter"] }
