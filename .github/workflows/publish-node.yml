@@ -2,7 +2,7 @@ name: Publish (node)
 
 env:
   DEBUG: napi:*
-  APP_NAME: css
+  APP_NAME: swc_css
   MACOSX_DEPLOYMENT_TARGET: "10.13"
   CARGO_INCREMENTAL: 0
   CI: "1"
