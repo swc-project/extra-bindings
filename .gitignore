@@ -1,3 +1,64 @@
-node_modules/
-.DS_Store
+# Built files
+/*.js
+!node-swc/jest.config.js
+/*.map
+/*.d.ts
+native/artifacts.json
+artifacts.json
+*.node
+*.tmp_node_swc_fixture_test
+/scripts/npm/**/swc
+/scripts/npm/**/swc.exe
+
+
 target/
+**/*.bk
+*.log
+
+.vscode/*
+!.vscode/settings.json
+*.swp
+
+/.idea
+*.iml
+
+.DS_Store
+
+node_modules/
+
+# Flamegraph
+*.html
+!crates/swc_html*/**/*.html
+*.svg
+package-lock.json
+*.data
+*.old
+*.stacks
+
+# Coverage datas
+*.zip
+*.info
+# Custom cargo target directory for converages
+.COVERAGE_DIR
+
+**/*~
+**/node_modules
+**/.DS_Store
+
+pkg/
+
+.idea/
+
+
+# Generated while testing
+*.tmp.js
+
+# Used to see output of babel.
+/lab
+
+*.mm_profdata
+.tsbuildinfo
+.swc/
+
+# Used by scripts
+*.tmp.txt
