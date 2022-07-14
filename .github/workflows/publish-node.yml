@@ -2,7 +2,7 @@ name: Publish (node)
 
 env:
   DEBUG: napi:*
-  APP_NAME: swc_css
+  APP_NAME: css
   MACOSX_DEPLOYMENT_TARGET: "10.13"
   CARGO_INCREMENTAL: 0
   CI: "1"
@@ -193,7 +193,7 @@ jobs:
         with:
           name: bindings-${{ matrix.settings.target }}
           path: |
-            swc*
+            css*
           if-no-files-found: error
   build-freebsd:
     if: ${{ startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/init' }}
@@ -286,7 +286,7 @@ jobs:
         with:
           name: bindings-freebsd
           path: |
-            swc*
+            css*
           if-no-files-found: error
   test-macOS-windows-binding:
     if: ${{ startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/init' }}
