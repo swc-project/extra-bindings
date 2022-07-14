@@ -108,7 +108,7 @@ fn minify_inner(code: &str, opts: MinifyOptions) -> anyhow::Result<TransformOutp
             bail!("failed to parse input as stylesheet (recovered)")
         }
 
-        swc_css_minifier::minify(&mut ss);
+        swc_css_minifier::minify(&mut ss, Default::default());
 
         let mut src_map = vec![];
         let code = {
