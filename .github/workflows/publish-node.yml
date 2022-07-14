@@ -44,7 +44,7 @@ jobs:
             build: >-
               set -e &&
               yarn build --target x86_64-unknown-linux-gnu &&
-              strip swc.linux-x64-gnu.node
+              strip css.linux-x64-gnu.node
           - host: ubuntu-latest
             target: x86_64-unknown-linux-musl
             # musl build is slow, let's disable the LTO
@@ -53,7 +53,7 @@ jobs:
               set -e &&
               export CARGO_PROFILE_RELEASE_LTO=false &&
               RUSTFLAGS='-C target-feature=+sse2 -C target-feature=-crt-static -Z new-llvm-pass-manager=no' yarn build &&
-              llvm-strip -x swc.linux-x64-musl.node
+              llvm-strip -x css.linux-x64-musl.node
           - host: macos-latest
             target: aarch64-apple-darwin
             build: |
@@ -72,7 +72,7 @@ jobs:
               rustup target add aarch64-unknown-linux-gnu &&
               export CC_aarch64_unknown_linux_gnu=/usr/aarch64-unknown-linux-gnu/bin/aarch64-unknown-linux-gnu-gcc &&
               yarn build --target aarch64-unknown-linux-gnu &&
-              llvm-strip -x swc.linux-arm64-gnu.node
+              llvm-strip -x css.linux-arm64-gnu.node
           - host: ubuntu-18.04
             target: armv7-unknown-linux-gnueabihf
             setup: |
@@ -80,7 +80,7 @@ jobs:
               sudo apt-get install gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf -y
             build: |
               yarn build --target=armv7-unknown-linux-gnueabihf --cargo-flags='--no-default-features'
-              arm-linux-gnueabihf-strip swc.linux-arm-gnueabihf.node
+              arm-linux-gnueabihf-strip css.linux-arm-gnueabihf.node
           - host: ubuntu-latest
             target: aarch64-linux-android
             build: |
@@ -115,7 +115,7 @@ jobs:
               rustup toolchain install $(cat ./rust-toolchain) &&
               rustup target add aarch64-unknown-linux-musl &&
               env RUSTFLAGS='-C target-feature=-crt-static -Z new-llvm-pass-manager=no' yarn build --target=aarch64-unknown-linux-musl &&
-              /aarch64-linux-musl-cross/bin/aarch64-linux-musl-strip swc.linux-arm64-musl.node
+              /aarch64-linux-musl-cross/bin/aarch64-linux-musl-strip css.linux-arm64-musl.node
           - host: windows-latest
             target: aarch64-pc-windows-msvc
             # Disable `LTO` and increase `codegen-units` to avoid llvm `OOM` on GitHub Actions.
