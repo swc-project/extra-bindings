@@ -571,7 +571,6 @@ jobs:
       - name: Move binaries
         shell: bash
         run: |
-          ./scripts/cli_artifacts.sh
           npm run artifacts
       - name: List npm
         run: ls -R ./scripts/npm
