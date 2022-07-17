@@ -8,9 +8,17 @@ mod util;
 use std::{backtrace::Backtrace, env, panic::set_hook};
 
 use anyhow::{bail, Context};
-use napi::{bindgen_prelude::*, Task};
+use napi::{bindgen_prelude::*, JsString, Task};
 use serde::{Deserialize, Serialize};
 use swc_common::FileName;
+use swc_html::{
+    codegen::{
+        writer::basic::{BasicHtmlWriter, BasicHtmlWriterConfig},
+        CodeGenerator, CodegenConfig, Emit,
+    },
+    parser::parse_file_as_document,
+};
+use swc_html_minifier::minify_document;
 use swc_nodejs_common::{deserialize_json, get_deserialized, MapErr};
 
 use crate::util::try_with;
@@ -23,14 +31,6 @@ fn init() {
             println!("Panic: {:?}\nBacktrace: {:?}", panic_info, backtrace);
         }));
     }
-}
-
-#[napi_derive::napi(object)]
-#[derive(Debug, Serialize)]
-pub struct TransformOutput {
-    pub code: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub map: Option<String>,
 }
 
 struct MinifyTask {
@@ -50,8 +50,8 @@ pub struct MinifyOptions {
 
 #[napi]
 impl Task for MinifyTask {
-    type JsValue = TransformOutput;
-    type Output = TransformOutput;
+    type JsValue = JsString;
+    type Output = String;
 
     fn compute(&mut self) -> napi::Result<Self::Output> {
         let opts = deserialize_json(&self.options)
@@ -61,12 +61,12 @@ impl Task for MinifyTask {
         minify_inner(&self.code, opts).convert_err()
     }
 
-    fn resolve(&mut self, _env: napi::Env, output: Self::Output) -> napi::Result<Self::JsValue> {
-        Ok(output)
+    fn resolve(&mut self, env: napi::Env, output: Self::Output) -> napi::Result<Self::JsValue> {
+        Ok(env.create_string(&output)?)
     }
 }
 
-fn minify_inner(code: &str, opts: MinifyOptions) -> anyhow::Result<TransformOutput> {
+fn minify_inner(code: &str, opts: MinifyOptions) -> anyhow::Result<String> {
     try_with(|cm, handler| {
         let filename = match opts.filename {
             Some(v) => FileName::Real(v.into()),
@@ -76,7 +76,7 @@ fn minify_inner(code: &str, opts: MinifyOptions) -> anyhow::Result<TransformOutp
         let fm = cm.new_source_file(filename, code.into());
 
         let mut errors = vec![];
-        let doc = swc_html::parser::parse_file_as_document(
+        let doc = parse_file_as_document(
             &fm,
             swc_html::parser::parser::ParserConfig {
                 ..Default::default()
@@ -104,26 +104,24 @@ fn minify_inner(code: &str, opts: MinifyOptions) -> anyhow::Result<TransformOutp
             bail!("failed to parse input as stylesheet (recovered)")
         }
 
-        swc_html_minifier::minify_document(&mut doc, &Default::default());
+        minify_document(&mut doc, &Default::default());
 
-        let mut src_map = vec![];
         let code = {
             let mut buf = String::new();
             {
-                let mut wr = BasicCssWriter::new(
+                let mut wr = BasicHtmlWriter::new(
                     &mut buf,
-                    if opts.source_map {
-                        Some(&mut src_map)
-                    } else {
-                        None
-                    },
-                    BasicCssWriterConfig {
-                        indent_type: IndentType::Space,
-                        indent_width: 0,
-                        linefeed: LineFeed::LF,
+                    None,
+                    BasicHtmlWriterConfig {
+                        ..Default::default()
                     },
                 );
-                let mut gen = CodeGenerator::new(&mut wr, CodegenConfig { minify: true });
+                let mut gen = CodeGenerator::new(
+                    &mut wr,
+                    CodegenConfig {
+                        ..Default::default()
+                    },
+                );
 
                 gen.emit(&doc).context("failed to emit")?;
             }
@@ -131,17 +129,7 @@ fn minify_inner(code: &str, opts: MinifyOptions) -> anyhow::Result<TransformOutp
             buf
         };
 
-        let map = if opts.source_map {
-            let map = cm.build_source_map(&mut src_map);
-            let mut buf = vec![];
-            map.to_writer(&mut buf)
-                .context("failed to geneate sourcemap")?;
-            Some(String::from_utf8(buf).context("the generated source map is not utf8")?)
-        } else {
-            None
-        };
-
-        Ok(TransformOutput { code, map })
+        Ok(code)
     })
 }
 
@@ -159,7 +147,7 @@ fn minify(code: Buffer, opts: Buffer, signal: Option<AbortSignal>) -> AsyncTask<
 
 #[allow(unused)]
 #[napi]
-pub fn minify_sync(code: Buffer, opts: Buffer) -> napi::Result<TransformOutput> {
+pub fn minify_sync(code: Buffer, opts: Buffer) -> napi::Result<String> {
     swc_nodejs_common::init_default_trace_subscriber();
     let code = String::from_utf8_lossy(code.as_ref()).to_string();
     let opts = get_deserialized(opts)?;
