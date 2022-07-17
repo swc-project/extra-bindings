@@ -1,6 +1,6 @@
 [workspace]
 members = [
-  "crates/node"
+  "crates/css_node"
 ]
 
 [profile.release]
