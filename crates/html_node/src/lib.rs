@@ -11,10 +11,6 @@ use anyhow::{bail, Context};
 use napi::{bindgen_prelude::*, Task};
 use serde::{Deserialize, Serialize};
 use swc_common::FileName;
-use swc_css_codegen::{
-    writer::basic::{BasicCssWriter, BasicCssWriterConfig, IndentType, LineFeed},
-    CodeGenerator, CodegenConfig, Emit,
-};
 use swc_nodejs_common::{deserialize_json, get_deserialized, MapErr};
 
 use crate::util::try_with;
@@ -80,10 +76,10 @@ fn minify_inner(code: &str, opts: MinifyOptions) -> anyhow::Result<TransformOutp
         let fm = cm.new_source_file(filename, code.into());
 
         let mut errors = vec![];
-        let ss = swc_css_parser::parse_file::<swc_css_ast::Stylesheet>(
+        let ss = swc_html::parser::parse_file_as_document(
             &fm,
-            swc_css_parser::parser::ParserConfig {
-                allow_wrong_line_comments: false,
+            swc_html::parser::parser::ParserConfig {
+                ..Default::default()
             },
             &mut errors,
         );
@@ -108,7 +104,7 @@ fn minify_inner(code: &str, opts: MinifyOptions) -> anyhow::Result<TransformOutp
             bail!("failed to parse input as stylesheet (recovered)")
         }
 
-        swc_css_minifier::minify(&mut ss, Default::default());
+        swc_html_minifier::minify(&mut ss, Default::default());
 
         let mut src_map = vec![];
         let code = {
