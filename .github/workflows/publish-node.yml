@@ -542,7 +542,7 @@ jobs:
         run: |
           yarn workspaces run artifacts
       - name: List npm
-        run: ls -R ./scripts/npm
+        run: ls -R ./packages/*/scripts/npm
         shell: bash
 
       - name: Publish
