@@ -2,7 +2,6 @@ name: Publish (node)
 
 env:
   DEBUG: napi:*
-  APP_NAME: css
   MACOSX_DEPLOYMENT_TARGET: "10.13"
   CARGO_INCREMENTAL: 0
   CI: "1"
