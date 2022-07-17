@@ -1,9 +1,9 @@
 # Built files
 *.js
-!lib/binding.js
+!binding.js
 *.map
 *.d.ts
-!lib/binding.d.ts
+!binding.d.ts
 native/artifacts.json
 artifacts.json
 *.node
