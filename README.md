@@ -1,4 +1,4 @@
-# @swc/css
+# bindings
 
-This repository only contains css bindings.
-Actual codes related to css are in the main swc repository.
+This repository only contains extra bindings.
+Actual codes are in the main swc repository.
