@@ -540,7 +540,7 @@ jobs:
       - name: Move binaries
         shell: bash
         run: |
-          npm run artifacts
+          yarn workspaces run artifacts
       - name: List npm
         run: ls -R ./scripts/npm
         shell: bash
