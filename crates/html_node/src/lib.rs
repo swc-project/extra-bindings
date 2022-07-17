@@ -76,7 +76,7 @@ fn minify_inner(code: &str, opts: MinifyOptions) -> anyhow::Result<TransformOutp
         let fm = cm.new_source_file(filename, code.into());
 
         let mut errors = vec![];
-        let ss = swc_html::parser::parse_file_as_document(
+        let doc = swc_html::parser::parse_file_as_document(
             &fm,
             swc_html::parser::parser::ParserConfig {
                 ..Default::default()
@@ -84,7 +84,7 @@ fn minify_inner(code: &str, opts: MinifyOptions) -> anyhow::Result<TransformOutp
             &mut errors,
         );
 
-        let mut ss = match ss {
+        let mut doc = match doc {
             Ok(v) => v,
             Err(err) => {
                 err.to_diagnostics(handler).emit();
@@ -104,7 +104,7 @@ fn minify_inner(code: &str, opts: MinifyOptions) -> anyhow::Result<TransformOutp
             bail!("failed to parse input as stylesheet (recovered)")
         }
 
-        swc_html_minifier::minify(&mut ss, Default::default());
+        swc_html_minifier::minify_document(&mut doc, &Default::default());
 
         let mut src_map = vec![];
         let code = {
@@ -125,7 +125,7 @@ fn minify_inner(code: &str, opts: MinifyOptions) -> anyhow::Result<TransformOutp
                 );
                 let mut gen = CodeGenerator::new(&mut wr, CodegenConfig { minify: true });
 
-                gen.emit(&ss).context("failed to emit")?;
+                gen.emit(&doc).context("failed to emit")?;
             }
 
             buf
