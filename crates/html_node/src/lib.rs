@@ -9,7 +9,7 @@ use std::{backtrace::Backtrace, env, panic::set_hook};
 
 use anyhow::{bail, Context};
 use napi::{bindgen_prelude::*, JsString, Task};
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use swc_common::FileName;
 use swc_html::{
     codegen::{
@@ -43,9 +43,6 @@ struct MinifyTask {
 pub struct MinifyOptions {
     #[serde(default)]
     filename: Option<String>,
-
-    #[serde(default)]
-    source_map: bool,
 }
 
 #[napi]
