@@ -210,36 +210,6 @@ jobs:
         shell: bash
         run: |
           yarn
-      - name: Cleanup useless files to speedup
-        run: |
-          rm -rf crates/swc_css_parser/tests/errors
-          rm -rf crates/swc_css_parser/fixture
-          rm -rf crates/swc_css_parser/line-comment
-          rm -rf crates/swc_css_parser/recovery
-          rm -rf crates/swc_estree_compat/tests/fixtures
-          rm -rf crates/swc/tests/deno-unit
-          rm -rf crates/swc/tests/env
-          rm -rf crates/swc/tests/fixture
-          rm -rf tests/integration
-          rm -rf crates/swc/tests/projects
-          rm -rf crates/swc/tests/serde
-          rm -rf crates/swc/tests/srcmap
-          rm -rf crates/swc/tests/projects
-          rm -rf crates/swc/tests/stacktrace
-          rm -rf crates/swc/tests/swcrc_errors
-          rm -rf crates/swc/tests/vercel
-          rm -rf crates/swc/tests/tsc-references
-          rm -rf crates/swc_bundler/tests
-          rm -rf crates/swc_ecma_parser/tests/tsc
-          rm -rf crates/swc_ecma_parser/tests/typescript
-          rm -rf crates/swc_ecma_minifier/tests/terser
-          rm -rf crates/swc_ecma_minifier/tests/compress
-          rm -rf crates/swc_ecma_minifier/tests/exec
-          rm -rf crates/swc_ecma_minifier/tests/full
-          rm -rf crates/swc_ecma_minifier/tests/mangle
-          rm -rf crates/swc_ecma_codegen/tests/fixture
-          rm -rf crates/swc_ecma_codegen/tests/test262
-          rm -rf crates/swc_ecma_codegen/tests/test262-min
       - name: Build
         id: build
         uses: vmactions/freebsd-vm@v0.1.6
