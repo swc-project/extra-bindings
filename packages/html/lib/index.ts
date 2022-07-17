@@ -1,9 +1,6 @@
 import binding = require("./binding");
 
-export async function minify(
-  content: Buffer,
-  options: any
-): Promise<binding.TransformOutput> {
+export async function minify(content: Buffer, options: any): Promise<string> {
   return binding.minify(content, toBuffer(options));
 }
 
