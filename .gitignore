@@ -1,12 +1,8 @@
 # Built files
-/*.js
-/lib/*.js
+*.js
 !lib/binding.js
-!node-swc/jest.config.js
-/*.map
-/lib/*.map
-/*.d.ts
-/lib/*.d.ts
+*.map
+*.d.ts
 !lib/binding.d.ts
 native/artifacts.json
 artifacts.json

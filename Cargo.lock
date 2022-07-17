@@ -160,6 +160,27 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fb4a24b1aaf0fd0ce8b45161144d6f42cd91677fd5940fd431183eb023b3a2b8"
 
 [[package]]
+name = "css_node"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "napi",
+ "napi-build",
+ "napi-derive",
+ "serde",
+ "serde_json",
+ "swc_common",
+ "swc_css_ast",
+ "swc_css_codegen",
+ "swc_css_minifier",
+ "swc_css_parser",
+ "swc_error_reporters",
+ "swc_nodejs_common",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "ctor"
 version = "0.1.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -589,27 +610,6 @@ name = "new_debug_unreachable"
 version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e4a24736216ec316047a1fc4252e27dabb04218aa4a3f37c6e7ddbf1f9782b54"
-
-[[package]]
-name = "node"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "napi",
- "napi-build",
- "napi-derive",
- "serde",
- "serde_json",
- "swc_common",
- "swc_css_ast",
- "swc_css_codegen",
- "swc_css_minifier",
- "swc_css_parser",
- "swc_error_reporters",
- "swc_nodejs_common",
- "tracing",
- "tracing-subscriber",
-]
 
 [[package]]
 name = "num-bigint"

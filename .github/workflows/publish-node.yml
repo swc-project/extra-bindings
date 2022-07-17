@@ -2,7 +2,6 @@ name: Publish (node)
 
 env:
   DEBUG: napi:*
-  APP_NAME: css
   MACOSX_DEPLOYMENT_TARGET: "10.13"
   CARGO_INCREMENTAL: 0
   CI: "1"
@@ -25,25 +24,25 @@ jobs:
           - host: macos-latest
             target: x86_64-apple-darwin
             build: |
-              yarn build
-              strip -x *.node
+              yarn workspaces run build
+              strip -x packages/*/*.node
           - host: windows-latest
             build: |
-              yarn build
+              yarn workspaces run build
             target: x86_64-pc-windows-msvc
           - host: windows-latest
             build: |
               export CARGO_PROFILE_RELEASE_LTO=false
-              yarn build --target i686-pc-windows-msvc --cargo-flags="--no-default-features"
-              yarn test
+              yarn workspaces run build --target i686-pc-windows-msvc --cargo-flags="--no-default-features"
+              yarn workspaces run test
             target: i686-pc-windows-msvc
           - host: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian
             build: >-
               set -e &&
-              yarn build --target x86_64-unknown-linux-gnu &&
-              strip css.linux-x64-gnu.node
+              yarn workspaces run build --target x86_64-unknown-linux-gnu &&
+              strip packages/*/*.node
           - host: ubuntu-latest
             target: x86_64-unknown-linux-musl
             # musl build is slow, let's disable the LTO
@@ -51,8 +50,8 @@ jobs:
             build: >-
               set -e &&
               export CARGO_PROFILE_RELEASE_LTO=false &&
-              RUSTFLAGS='-C target-feature=+sse2 -C target-feature=-crt-static -Z new-llvm-pass-manager=no' yarn build &&
-              llvm-strip -x css.linux-x64-musl.node
+              RUSTFLAGS='-C target-feature=+sse2 -C target-feature=-crt-static -Z new-llvm-pass-manager=no' yarn workspaces run build &&
+              llvm-strip -x packages/*/*.node
           - host: macos-latest
             target: aarch64-apple-darwin
             build: |
@@ -61,8 +60,8 @@ jobs:
               export CXX=$(xcrun -f clang++);
               SYSROOT=$(xcrun --sdk macosx --show-sdk-path);
               export CFLAGS="-isysroot $SYSROOT -isystem $SYSROOT";
-              yarn build --target=aarch64-apple-darwin
-              strip -x *.node
+              yarn workspaces run build --target=aarch64-apple-darwin
+              strip -x packages/*/*.node
           - host: ubuntu-latest
             target: aarch64-unknown-linux-gnu
             docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian-aarch64
@@ -70,16 +69,16 @@ jobs:
               set -e &&
               rustup target add aarch64-unknown-linux-gnu &&
               export CC_aarch64_unknown_linux_gnu=/usr/aarch64-unknown-linux-gnu/bin/aarch64-unknown-linux-gnu-gcc &&
-              yarn build --target aarch64-unknown-linux-gnu &&
-              llvm-strip -x css.linux-arm64-gnu.node
+              yarn workspaces run build --target aarch64-unknown-linux-gnu &&
+              llvm-strip -x packages/*/*.node
           - host: ubuntu-18.04
             target: armv7-unknown-linux-gnueabihf
             setup: |
               sudo apt-get update
               sudo apt-get install gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf -y
             build: |
-              yarn build --target=armv7-unknown-linux-gnueabihf --cargo-flags='--no-default-features'
-              arm-linux-gnueabihf-strip css.linux-arm-gnueabihf.node
+              yarn workspaces run build --target=armv7-unknown-linux-gnueabihf --cargo-flags='--no-default-features'
+              arm-linux-gnueabihf-strip packages/*/*.node
           - host: ubuntu-latest
             target: aarch64-linux-android
             build: |
@@ -91,8 +90,8 @@ jobs:
               touch /usr/local/lib/android/sdk/ndk-bundle/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/12.0.9/lib/linux/aarch64/libgcc.a
               chmod 777 /usr/local/lib/android/sdk/ndk-bundle/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/12.0.9/lib/linux/aarch64/libgcc.a
               echo "INPUT(-lunwind)" > /usr/local/lib/android/sdk/ndk-bundle/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/12.0.9/lib/linux/aarch64/libgcc.a
-              yarn build --target aarch64-linux-android
-              ${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip *.node
+              yarn workspaces run build --target aarch64-linux-android
+              ${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip packages/*/*.node
           - host: ubuntu-latest
             target: armv7-linux-androideabi
             build: |
@@ -104,8 +103,8 @@ jobs:
               touch /usr/local/lib/android/sdk/ndk-bundle/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/12.0.9/lib/linux/arm/libgcc.a
               chmod 777 /usr/local/lib/android/sdk/ndk-bundle/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/12.0.9/lib/linux/arm/libgcc.a
               echo "INPUT(-lunwind)" > /usr/local/lib/android/sdk/ndk-bundle/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/12.0.9/lib/linux/arm/libgcc.a
-              yarn build --target armv7-linux-androideabi --cargo-flags='--no-default-features'
-              ${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip *.node
+              yarn workspaces run build --target armv7-linux-androideabi --cargo-flags='--no-default-features'
+              ${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip packages/*/*.node
           - host: ubuntu-latest
             target: aarch64-unknown-linux-musl
             downloadTarget: aarch64-unknown-linux-musl
@@ -113,15 +112,15 @@ jobs:
             build: >-
               rustup toolchain install $(cat ./rust-toolchain) &&
               rustup target add aarch64-unknown-linux-musl &&
-              env RUSTFLAGS='-C target-feature=-crt-static -Z new-llvm-pass-manager=no' yarn build --target=aarch64-unknown-linux-musl &&
-              /aarch64-linux-musl-cross/bin/aarch64-linux-musl-strip css.linux-arm64-musl.node
+              env RUSTFLAGS='-C target-feature=-crt-static -Z new-llvm-pass-manager=no' yarn workspaces run build --target=aarch64-unknown-linux-musl &&
+              /aarch64-linux-musl-cross/bin/aarch64-linux-musl-strip packages/*/*.node
           - host: windows-latest
             target: aarch64-pc-windows-msvc
             # Disable `LTO` and increase `codegen-units` to avoid llvm `OOM` on GitHub Actions.
             build: |
               export CARGO_PROFILE_RELEASE_CODEGEN_UNITS=256
               export CARGO_PROFILE_RELEASE_LTO=false
-              yarn build --target aarch64-pc-windows-msvc --cargo-flags='--no-default-features'
+              yarn workspaces run build --target aarch64-pc-windows-msvc --cargo-flags='--no-default-features'
     name: stable - ${{ matrix.settings.target }} - node@16
     runs-on: ${{ matrix.settings.host }}
     steps:
@@ -192,7 +191,7 @@ jobs:
         with:
           name: bindings-${{ matrix.settings.target }}
           path: |
-            css*
+            packages/*/*.node
           if-no-files-found: error
   build-freebsd:
     if: ${{ startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/ci' }}
@@ -211,36 +210,6 @@ jobs:
         shell: bash
         run: |
           yarn
-      - name: Cleanup useless files to speedup
-        run: |
-          rm -rf crates/swc_css_parser/tests/errors
-          rm -rf crates/swc_css_parser/fixture
-          rm -rf crates/swc_css_parser/line-comment
-          rm -rf crates/swc_css_parser/recovery
-          rm -rf crates/swc_estree_compat/tests/fixtures
-          rm -rf crates/swc/tests/deno-unit
-          rm -rf crates/swc/tests/env
-          rm -rf crates/swc/tests/fixture
-          rm -rf tests/integration
-          rm -rf crates/swc/tests/projects
-          rm -rf crates/swc/tests/serde
-          rm -rf crates/swc/tests/srcmap
-          rm -rf crates/swc/tests/projects
-          rm -rf crates/swc/tests/stacktrace
-          rm -rf crates/swc/tests/swcrc_errors
-          rm -rf crates/swc/tests/vercel
-          rm -rf crates/swc/tests/tsc-references
-          rm -rf crates/swc_bundler/tests
-          rm -rf crates/swc_ecma_parser/tests/tsc
-          rm -rf crates/swc_ecma_parser/tests/typescript
-          rm -rf crates/swc_ecma_minifier/tests/terser
-          rm -rf crates/swc_ecma_minifier/tests/compress
-          rm -rf crates/swc_ecma_minifier/tests/exec
-          rm -rf crates/swc_ecma_minifier/tests/full
-          rm -rf crates/swc_ecma_minifier/tests/mangle
-          rm -rf crates/swc_ecma_codegen/tests/fixture
-          rm -rf crates/swc_ecma_codegen/tests/test262
-          rm -rf crates/swc_ecma_codegen/tests/test262-min
       - name: Build
         id: build
         uses: vmactions/freebsd-vm@v0.1.6
@@ -276,8 +245,8 @@ jobs:
             env
             freebsd-version
             yarn install --ignore-scripts --registry https://registry.npmjs.org --network-timeout 300000
-            yarn build --cargo-flags="--no-default-features"
-            yarn test
+            yarn workspaces run build --cargo-flags="--no-default-features"
+            yarn workspaces run test
             rm -rf node_modules
             rm -rf target
       - name: Upload artifact
@@ -285,7 +254,7 @@ jobs:
         with:
           name: bindings-freebsd
           path: |
-            css*
+            packages/*/*.node
           if-no-files-found: error
   test-macOS-windows-binding:
     if: ${{ startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/ci' }}
@@ -326,9 +295,9 @@ jobs:
         run: ls -R .
         shell: bash
       - name: Build TypeScript
-        run: yarn build:ts
+        run: yarn workspaces run build:ts
       - name: Test bindings
-        run: yarn test
+        run: yarn workspaces run test
   test-linux-x64-gnu-binding:
     if: ${{ startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/ci' }}
     name: Test bindings on Linux-x64-gnu - node@${{ matrix.node }}
@@ -365,9 +334,9 @@ jobs:
         run: ls -R .
         shell: bash
       - name: Build TypeScript
-        run: yarn build:ts
+        run: yarn workspaces run build:ts
       - name: Test bindings
-        run: docker run --rm -v $(pwd):/swc -w /swc node:${{ matrix.node }}-slim yarn test
+        run: docker run --rm -v $(pwd):/swc -w /swc node:${{ matrix.node }}-slim yarn workspaces run test
   test-linux-x64-musl-binding:
     if: ${{ startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/ci' }}
     name: Test bindings on x86_64-unknown-linux-musl - node@${{ matrix.node }}
@@ -404,9 +373,9 @@ jobs:
         run: ls -R .
         shell: bash
       - name: Build TypeScript
-        run: yarn build:ts
+        run: yarn workspaces run build:ts
       - name: Test bindings
-        run: docker run --rm -v $(pwd):/swc -w /swc node:${{ matrix.node }}-alpine yarn test
+        run: docker run --rm -v $(pwd):/swc -w /swc node:${{ matrix.node }}-alpine yarn workspaces run test
   test-linux-aarch64-gnu-binding:
     if: ${{ startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/ci' }}
     name: Test bindings on aarch64-unknown-linux-gnu - node@${{ matrix.node }}
@@ -439,7 +408,7 @@ jobs:
       - name: Install dependencies
         run: yarn install --ignore-scripts --ignore-platform --registry https://registry.npmjs.org --network-timeout 300000
       - name: Build TypeScript
-        run: yarn build:ts
+        run: yarn workspaces run build:ts
       - name: Setup and run tests
         uses: addnab/docker-run-action@v3
         with:
@@ -447,7 +416,7 @@ jobs:
           options: "-v ${{ github.workspace }}:/build -w /build"
           run: |
             set -e
-            yarn test
+            yarn workspaces run test
             ls -la
   test-linux-aarch64-musl-binding:
     if: ${{ startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/ci' }}
@@ -474,7 +443,7 @@ jobs:
       - name: Install dependencies
         run: yarn install --ignore-scripts --ignore-platform --registry https://registry.npmjs.org --network-timeout 300000
       - name: Build TypeScript
-        run: yarn build:ts
+        run: yarn workspaces run build:ts
       - name: Setup and run tests
         uses: addnab/docker-run-action@v3
         with:
@@ -483,7 +452,7 @@ jobs:
           run: |
             set -e
             apk add nodejs npm yarn
-            yarn test
+            yarn workspaces run test
   test-linux-arm-gnueabihf-binding:
     if: ${{ startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/ci' }}
     name: Test bindings on armv7-unknown-linux-gnueabihf - node@${{ matrix.node }}
@@ -516,7 +485,7 @@ jobs:
       - name: Install dependencies
         run: yarn install --ignore-scripts --ignore-platform --registry https://registry.npmjs.org --network-timeout 300000
       - name: Build TypeScript
-        run: yarn build:ts
+        run: yarn workspaces run build:ts
       - name: Setup and run tests
         uses: addnab/docker-run-action@v3
         with:
@@ -524,11 +493,11 @@ jobs:
           options: "-v ${{ github.workspace }}:/build -w /build"
           run: |
             set -e
-            yarn test
+            yarn workspaces run test
             ls -la
   publish:
-    if: ${{ startsWith(github.ref, 'refs/tags/v') }}
-
+    if: ${{ startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/ci' }}
+    
     name: npm
     runs-on: ubuntu-latest
     needs:
@@ -571,12 +540,13 @@ jobs:
       - name: Move binaries
         shell: bash
         run: |
-          npm run artifacts
+          yarn workspaces run artifacts
       - name: List npm
-        run: ls -R ./scripts/npm
+        run: ls -R ./packages/*/scripts/npm
         shell: bash
 
       - name: Publish
+        if: ${{ startsWith(github.ref, 'refs/tags/v') }}
         run: |
           echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
           npm publish --access public

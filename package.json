@@ -1,59 +1,14 @@
 {
-  "name": "@swc/css",
-  "version": "0.0.4",
-  "description": "Super-fast alternative for postcss",
-  "homepage": "https://swc.rs",
-  "main": "./index.js",
-  "author": "강동윤 <kdy1997.dev@gmail.com>",
+  "name": "@swc/bindings",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:swc-project/swc.git",
+  "author": "Donny/강동윤 <kdy1997.dev@gmail.com>",
   "license": "Apache-2.0",
-  "keywords": [
-    "swc",
-    "css"
+  "private": true,
+  "workspaces": [
+    "packages/*"
   ],
-  "engines": {
-    "node": ">=10"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/swc-project/swc.git"
-  },
-  "bugs": {
-    "url": "https://github.com/swc-project/swc/issues"
-  },
-  "napi": {
-    "name": "css",
-    "triples": {
-      "defaults": true,
-      "additional": [
-        "x86_64-unknown-linux-musl",
-        "x86_64-unknown-freebsd",
-        "i686-pc-windows-msvc",
-        "aarch64-unknown-linux-gnu",
-        "armv7-unknown-linux-gnueabihf",
-        "aarch64-apple-darwin",
-        "aarch64-linux-android",
-        "aarch64-unknown-linux-musl",
-        "aarch64-pc-windows-msvc",
-        "armv7-linux-androideabi"
-      ]
-    }
-  },
-  "publishConfig": {
-    "registry": "https://registry.npmjs.org/",
-    "access": "public"
-  },
-  "scripts": {
-    "prepare": "husky install && git config feature.manyFiles true",
-    "artifacts": "napi artifacts --dist scripts/npm",
-    "prepublishOnly": "tsc -d && napi prepublish -p scripts/npm --tagstyle npm",
-    "pack": "wasm-pack",
-    "build:ts": "tsc -d",
-    "build:wasm": "npm-run-all \"pack -- build ./crates/wasm --scope swc {1} -t {2} \" --",
-    "build": "tsc -d && napi build --platform --cargo-name node --js ./lib/binding.js --dts ./lib/binding.d.ts -p node --release",
-    "build:dev": "tsc -d && napi build --platform --cargo-name node --js ./lib/binding.js --dts ./lib/binding.d.ts -p node",
-    "test": "echo 'done!'",
-    "version": "napi version -p scripts/npm"
-  },
   "lint-staged": {
     "*.toml": [
       "taplo format"
@@ -74,6 +29,13 @@
       "prettier --write"
     ]
   },
+  "funding": {
+    "type": "opencollective",
+    "url": "https://opencollective.com/swc"
+  },
+  "scripts": {
+    "prepare": "husky install && git config feature.manyFiles true"
+  },
   "devDependencies": {
     "@napi-rs/cli": "^2.10.0",
     "@taplo/cli": "^0.3.2",
@@ -87,9 +49,5 @@
     "npm-run-all": "^4.1.5",
     "prettier": "^2.6.2",
     "typescript": "^4.5.2"
-  },
-  "funding": {
-    "type": "opencollective",
-    "url": "https://opencollective.com/swc"
   }
 }
