@@ -497,7 +497,7 @@ jobs:
             ls -la
   publish:
     if: ${{ startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/ci' }}
-    
+
     name: npm
     runs-on: ubuntu-latest
     needs:
@@ -536,6 +536,12 @@ jobs:
       - name: List binaries
         run: ls -R artifacts
         shell: bash
+
+      - name: Copy binaries
+        shell: bash
+        run: |
+          ./scripts/move-artifacts.sh css || true
+          ./scripts/move-artifacts.sh html || true
 
       - name: Move binaries
         shell: bash

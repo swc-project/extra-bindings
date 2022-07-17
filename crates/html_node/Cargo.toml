@@ -4,7 +4,7 @@ build = "build.rs"
 edition = "2021"
 exclude = ["artifacts.json", "index.node"]
 license = "Apache-2.0"
-name = "css_node"
+name = "html_node"
 publish = false
 version = "0.1.0"
 
@@ -28,12 +28,10 @@ napi-derive = {version = "2", default-features = false, features = [
 ]}
 serde = {version = "1", features = ["derive"]}
 serde_json = "1"
-swc_common = {version = "0.24.1", features = ["sourcemap"]}
-swc_css_ast = "0.99.0"
-swc_css_codegen = "0.109.0"
-swc_css_minifier = "0.74.0"
-swc_css_parser = "0.108.0"
+swc_common = {version = "0.24.1"}
 swc_error_reporters = "0.8.0"
+swc_html = {version = "0.47.0", features = ["minifier"]}
+swc_html_minifier = "0.44.1"
 swc_nodejs_common = "0.0.1"
 tracing = {version = "0.1.32", features = ["release_max_level_info"]}
 tracing-subscriber = {version = "0.3.9", features = ["env-filter"]}
