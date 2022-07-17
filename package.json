@@ -6,6 +6,9 @@
   "author": "Donny/강동윤 <kdy1997.dev@gmail.com>",
   "license": "MIT",
   "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
   "lint-staged": {
     "*.toml": [
       "taplo format"
@@ -29,5 +32,8 @@
   "funding": {
     "type": "opencollective",
     "url": "https://opencollective.com/swc"
+  },
+  "scripts": {
+    "prepare": "husky install && git config feature.manyFiles true"
   }
 }
