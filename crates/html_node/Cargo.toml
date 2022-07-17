@@ -31,6 +31,7 @@ serde_json = "1"
 swc_common = { version = "0.24.1", features = ["concurrent", "sourcemap"] }
 swc_error_reporters = "0.8.0"
 swc_html = { version = "0.47.0", features = ["minifier"] }
+swc_html_minifier = "0.44.1"
 swc_nodejs_common = "0.0.1"
 tracing = { version = "0.1.32", features = ["release_max_level_info"] }
 tracing-subscriber = { version = "0.3.9", features = ["env-filter"] }

@@ -400,6 +400,7 @@ dependencies = [
  "swc_common",
  "swc_error_reporters",
  "swc_html",
+ "swc_html_minifier",
  "swc_nodejs_common",
  "tracing",
  "tracing-subscriber",
@@ -1784,9 +1785,9 @@ dependencies = [
 
 [[package]]
 name = "swc_html_minifier"
-version = "0.44.0"
+version = "0.44.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5037ec5270a39912f1019b63a27f255bd5d932b9a35b53eebb956f67b170b506"
+checksum = "4e96356c96f59a06bbd67962810b8f972ea75aecca2823624b6a62a781135dc7"
 dependencies = [
  "once_cell",
  "serde",
