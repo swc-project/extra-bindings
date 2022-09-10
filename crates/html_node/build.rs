@@ -8,7 +8,7 @@ use std::{
 extern crate napi_build;
 
 fn main() {
-    let out_dir = env::var("OUT_DIR").expect("Outdir should exist");
+    let out_dir = env::var("OUT_DIR").expect("Out dir should exist");
     let dest_path = Path::new(&out_dir).join("triple.txt");
     let mut f =
         BufWriter::new(File::create(&dest_path).expect("Failed to create target triple text"));
