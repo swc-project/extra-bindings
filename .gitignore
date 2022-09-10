@@ -41,6 +41,7 @@ package-lock.json
 *.info
 # Custom cargo target directory for converages
 .COVERAGE_DIR
+.yarn
 
 **/*~
 **/node_modules
