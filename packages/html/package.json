@@ -1,6 +1,6 @@
 {
   "name": "@swc/html",
-  "version": "0.0.5",
+  "version": "0.0.10",
   "description": "Super-fast alternative for posthtml",
   "homepage": "https://swc.rs",
   "main": "./index.js",
@@ -11,7 +11,7 @@
     "html"
   ],
   "engines": {
-    "node": ">=10"
+    "node": ">=14"
   },
   "repository": {
     "type": "git",
