@@ -1,5 +1,6 @@
 # Built files
 *.js
+!index.js
 !binding.js
 *.map
 *.d.ts
