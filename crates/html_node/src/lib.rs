@@ -116,6 +116,7 @@ fn minify_inner(code: &str, opts: MinifyOptions) -> anyhow::Result<String> {
                 let mut gen = CodeGenerator::new(
                     &mut wr,
                     CodegenConfig {
+                        minify: true,
                         ..Default::default()
                     },
                 );
