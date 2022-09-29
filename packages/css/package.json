@@ -3,7 +3,7 @@
   "version": "0.0.15",
   "description": "Super-fast alternative for postcss",
   "homepage": "https://swc.rs",
-  "main": "./lib/index.js",
+  "main": "./index.js",
   "author": "강동윤 <kdy1997.dev@gmail.com>",
   "license": "Apache-2.0",
   "keywords": [
@@ -48,8 +48,8 @@
     "pack": "wasm-pack",
     "build:ts": "tsc -d",
     "build:wasm": "npm-run-all \"pack -- build ./crates/wasm --scope swc {1} -t {2} \" --",
-    "build": "tsc -d && napi build --platform --cargo-name css_node --js ./lib/binding.js --dts ./lib/binding.d.ts -p css_node --release --cargo-cwd ../..",
-    "build:dev": "tsc -d && napi build --platform --cargo-name css_node --js ./lib/binding.js --dts ./lib/binding.d.ts -p css_node --cargo-cwd ../..",
+    "build": "tsc -d && napi build --platform --cargo-name css_node --js ./binding.js --dts binding.d.ts -p css_node --release --cargo-cwd ../..",
+    "build:dev": "tsc -d && napi build --platform --cargo-name css_node --js ./binding.js --dts binding.d.ts -p css_node --cargo-cwd ../..",
     "test": "echo 'done!'",
     "version": "napi version -p scripts/npm"
   }

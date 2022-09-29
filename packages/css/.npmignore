@@ -43,6 +43,7 @@ ecmascript
 macros
 node
 node-swc
+examples
 scripts
 spack
 testing
