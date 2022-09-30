@@ -139,7 +139,7 @@ fn minify_inner(code: &str, opts: MinifyOptions) -> anyhow::Result<TransformOutp
             let map = cm.build_source_map(&mut src_map);
             let mut buf = vec![];
             map.to_writer(&mut buf)
-                .context("failed to geneate sourcemap")?;
+                .context("failed to generate sourcemap")?;
             Some(String::from_utf8(buf).context("the generated source map is not utf8")?)
         } else {
             None
