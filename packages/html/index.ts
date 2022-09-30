@@ -14,7 +14,7 @@ type Options = {
     | "conservative"
     | "advanced-conservative"
     | "only-metadata";
-  removeEmptyMetedataElements?: boolean;
+  removeEmptyMetadataElements?: boolean;
   removeComments?: boolean;
   preserveComments: string[];
   minifyConditionalComments?: boolean;

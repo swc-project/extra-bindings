@@ -64,7 +64,7 @@ pub struct MinifyOptions {
     // Remove safe empty elements with metadata content, i.e. the `script` and `style` element
     // without content and attributes, `meta` and `link` elements without attributes and etc
     #[serde(default = "true_by_default")]
-    remove_empty_metedata_elements: bool,
+    remove_empty_metadata_elements: bool,
     #[serde(default = "true_by_default")]
     remove_comments: bool,
     #[serde(default = "default_preserve_comments")]
@@ -200,7 +200,7 @@ fn minify_inner(code: &str, opts: MinifyOptions) -> anyhow::Result<String> {
         let options = swc_html_minifier::option::MinifyOptions {
             force_set_html5_doctype: opts.force_set_html5_doctype,
             collapse_whitespaces: opts.collapse_whitespaces,
-            remove_empty_metedata_elements: opts.remove_empty_metedata_elements,
+            remove_empty_metadata_elements: opts.remove_empty_metadata_elements,
             remove_comments: opts.remove_comments,
             preserve_comments: opts.preserve_comments,
             minify_conditional_comments: opts.minify_conditional_comments,
