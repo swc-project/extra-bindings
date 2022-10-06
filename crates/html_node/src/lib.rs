@@ -99,6 +99,8 @@ pub struct MinifyOptions {
     tag_omission: Option<bool>,
     #[serde(default)]
     self_closing_void_elements: Option<bool>,
+    #[serde(default)]
+    quotes: Option<bool>,
 }
 
 const fn true_by_default() -> bool {
@@ -236,6 +238,7 @@ fn minify_inner(code: &str, opts: MinifyOptions) -> anyhow::Result<String> {
                         scripting_enabled,
                         tag_omission: opts.tag_omission,
                         self_closing_void_elements: opts.self_closing_void_elements,
+                        quotes: opts.quotes,
                         ..Default::default()
                     },
                 );

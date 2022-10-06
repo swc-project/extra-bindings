@@ -32,6 +32,7 @@ type Options = {
   sortAttributes?: boolean;
   tagOmission?: boolean;
   selfClosingVoidElements?: boolean;
+  quotes?: boolean;
 };
 
 export async function minify(
