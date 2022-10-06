@@ -8,7 +8,7 @@ mod util;
 use std::{backtrace::Backtrace, env, panic::set_hook};
 
 use anyhow::{bail, Context};
-use napi::{bindgen_prelude::*, JsString, Task};
+use napi::{bindgen_prelude::*, Task};
 use serde::{Deserialize, Serialize};
 use swc_cached::regex::CachedRegex;
 use swc_common::FileName;
