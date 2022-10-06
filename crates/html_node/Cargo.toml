@@ -28,10 +28,11 @@ napi-derive = { version = "2", default-features = false, features = [
 ] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-swc_common = "0.28.9"
-swc_error_reporters = "0.12.9"
-swc_html = { version = "0.76.7", features = ["minifier"] }
-swc_html_minifier = "0.73.7"
+swc_cached = "0.3.14"
+swc_common = "0.29.5"
+swc_error_reporters = "0.13.5"
+swc_html = { version = "0.79.11", features = ["minifier"] }
+swc_html_minifier = "0.76.11"
 swc_nodejs_common = "0.0.1"
-tracing = { version = "0.1.32", features = ["release_max_level_info"] }
-tracing-subscriber = { version = "0.3.9", features = ["env-filter"] }
+tracing = { version = "0.1.36", features = ["release_max_level_info"] }
+tracing-subscriber = { version = "0.3.15", features = ["env-filter"] }
