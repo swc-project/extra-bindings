@@ -10,7 +10,7 @@ export interface Diagnostic {
 }
 export interface TransformOutput {
   code: string;
-  errors: Array<Diagnostic>;
+  errors?: Array<Diagnostic>;
 }
 export function minify(
   code: Buffer,
