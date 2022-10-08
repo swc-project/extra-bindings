@@ -38,11 +38,14 @@ type Options = {
 export async function minify(
   content: Buffer,
   options?: Options
-): Promise<string> {
+): Promise<binding.TransformOutput> {
   return binding.minify(content, toBuffer(options ?? {}));
 }
 
-export function minifySync(content: Buffer, options?: Options) {
+export function minifySync(
+  content: Buffer,
+  options?: Options
+): binding.TransformOutput {
   return binding.minifySync(content, toBuffer(options ?? {}));
 }
 

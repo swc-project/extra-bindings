@@ -8,8 +8,8 @@ mod util;
 use std::{backtrace::Backtrace, env, panic::set_hook};
 
 use anyhow::{bail, Context};
-use napi::{bindgen_prelude::*, JsString, Task};
-use serde::Deserialize;
+use napi::{bindgen_prelude::*, Task};
+use serde::{Deserialize, Serialize};
 use swc_cached::regex::CachedRegex;
 use swc_common::FileName;
 use swc_html::{
@@ -37,6 +37,22 @@ fn init() {
             println!("Panic: {:?}\nBacktrace: {:?}", panic_info, backtrace);
         }));
     }
+}
+
+#[napi_derive::napi(object)]
+#[derive(Debug, Serialize)]
+pub struct Diagnostic {
+    pub level: String,
+    pub message: String,
+    pub span: serde_json::Value,
+}
+
+#[napi_derive::napi(object)]
+#[derive(Debug, Serialize)]
+pub struct TransformOutput {
+    pub code: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub errors: Option<Vec<Diagnostic>>,
 }
 
 struct MinifyTask {
@@ -142,8 +158,8 @@ const fn default_collapse_whitespaces() -> CollapseWhitespaces {
 
 #[napi]
 impl Task for MinifyTask {
-    type JsValue = JsString;
-    type Output = String;
+    type JsValue = TransformOutput;
+    type Output = TransformOutput;
 
     fn compute(&mut self) -> napi::Result<Self::Output> {
         let opts = deserialize_json(&self.options)
@@ -153,12 +169,12 @@ impl Task for MinifyTask {
         minify_inner(&self.code, opts).convert_err()
     }
 
-    fn resolve(&mut self, env: napi::Env, output: Self::Output) -> napi::Result<Self::JsValue> {
-        env.create_string(&output)
+    fn resolve(&mut self, _env: napi::Env, output: Self::Output) -> napi::Result<Self::JsValue> {
+        Ok(output)
     }
 }
 
-fn minify_inner(code: &str, opts: MinifyOptions) -> anyhow::Result<String> {
+fn minify_inner(code: &str, opts: MinifyOptions) -> anyhow::Result<TransformOutput> {
     try_with(|cm, handler| {
         let filename = match opts.filename {
             Some(v) => FileName::Real(v.into()),
@@ -191,12 +207,24 @@ fn minify_inner(code: &str, opts: MinifyOptions) -> anyhow::Result<String> {
             }
         };
 
-        if !errors.is_empty() {
-            for err in errors {
-                err.to_diagnostics(handler).emit();
-            }
+        let mut returned_errors = None;
 
-            bail!("failed to parse input as stylesheet (recovered)")
+        if !errors.is_empty() {
+            returned_errors = Some(Vec::with_capacity(errors.len()));
+
+            for err in errors {
+                let mut buf = vec![];
+
+                err.to_diagnostics(handler).buffer(&mut buf);
+
+                for i in buf {
+                    returned_errors.as_mut().unwrap().push(Diagnostic {
+                        level: i.level.to_string(),
+                        message: i.message(),
+                        span: serde_json::to_value(&i.span)?,
+                    });
+                }
+            }
         }
 
         let options = swc_html_minifier::option::MinifyOptions {
@@ -223,6 +251,7 @@ fn minify_inner(code: &str, opts: MinifyOptions) -> anyhow::Result<String> {
 
         let code = {
             let mut buf = String::new();
+
             {
                 let mut wr = BasicHtmlWriter::new(
                     &mut buf,
@@ -249,7 +278,10 @@ fn minify_inner(code: &str, opts: MinifyOptions) -> anyhow::Result<String> {
             buf
         };
 
-        Ok(code)
+        Ok(TransformOutput {
+            code,
+            errors: returned_errors,
+        })
     })
 }
 
@@ -267,7 +299,7 @@ fn minify(code: Buffer, opts: Buffer, signal: Option<AbortSignal>) -> AsyncTask<
 
 #[allow(unused)]
 #[napi]
-pub fn minify_sync(code: Buffer, opts: Buffer) -> napi::Result<String> {
+pub fn minify_sync(code: Buffer, opts: Buffer) -> napi::Result<TransformOutput> {
     swc_nodejs_common::init_default_trace_subscriber();
     let code = String::from_utf8_lossy(code.as_ref()).to_string();
     let opts = get_deserialized(opts)?;
