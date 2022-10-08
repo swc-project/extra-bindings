@@ -51,8 +51,7 @@ pub struct Diagnostic {
 #[derive(Debug, Serialize)]
 pub struct TransformOutput {
     pub code: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub errors: Option<Vec<Diagnostic>>,
+    pub errors: Vec<Diagnostic>,
 }
 
 struct MinifyTask {
@@ -207,27 +206,21 @@ fn minify_inner(code: &str, opts: MinifyOptions) -> anyhow::Result<TransformOutp
             }
         };
 
-        let mut returned_errors = None;
+        let mut returned_errors = Vec::with_capacity(errors.len());
 
-        {
-            if !errors.is_empty() {
-                let mut internal_errors = Vec::with_capacity(errors.len());
+        if !errors.is_empty() {
+            for err in errors {
+                let mut buf = vec![];
 
-                for err in errors {
-                    let mut buf = vec![];
+                err.to_diagnostics(handler).buffer(&mut buf);
 
-                    err.to_diagnostics(handler).buffer(&mut buf);
-
-                    for i in buf {
-                        internal_errors.push(Diagnostic {
-                            level: i.level.to_string(),
-                            message: i.message(),
-                            span: serde_json::to_value(&i.span)?,
-                        });
-                    }
+                for i in buf {
+                    returned_errors.push(Diagnostic {
+                        level: i.level.to_string(),
+                        message: i.message(),
+                        span: serde_json::to_value(&i.span)?,
+                    });
                 }
-
-                returned_errors = Some(internal_errors);
             }
         }
 
