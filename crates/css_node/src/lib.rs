@@ -31,10 +31,20 @@ fn init() {
 
 #[napi_derive::napi(object)]
 #[derive(Debug, Serialize)]
+pub struct Diagnostic {
+    pub level: String,
+    pub message: String,
+    pub span: serde_json::Value,
+}
+
+#[napi_derive::napi(object)]
+#[derive(Debug, Serialize)]
 pub struct TransformOutput {
     pub code: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub map: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub errors: Option<Vec<Diagnostic>>,
 }
 
 struct MinifyTask {
@@ -101,11 +111,24 @@ fn minify_inner(code: &str, opts: MinifyOptions) -> anyhow::Result<TransformOutp
             }
         };
 
+        let mut returned_errors = None;
+
         if !errors.is_empty() {
+            returned_errors = Some(Vec::with_capacity(errors.len()));
+
             for err in errors {
-                err.to_diagnostics(handler).emit();
+                let mut buf = vec![];
+
+                err.to_diagnostics(handler).buffer(&mut buf);
+
+                for i in buf {
+                    returned_errors.as_mut().unwrap().push(Diagnostic {
+                        level: i.level.to_string(),
+                        message: i.message(),
+                        span: serde_json::to_value(&i.span)?,
+                    });
+                }
             }
-            bail!("failed to parse input as stylesheet (recovered)")
         }
 
         swc_css_minifier::minify(&mut ss, Default::default());
@@ -145,7 +168,11 @@ fn minify_inner(code: &str, opts: MinifyOptions) -> anyhow::Result<TransformOutp
             None
         };
 
-        Ok(TransformOutput { code, map })
+        Ok(TransformOutput {
+            code,
+            map,
+            errors: returned_errors,
+        })
     })
 }
 
