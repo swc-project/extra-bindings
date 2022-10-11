@@ -175,112 +175,114 @@ impl Task for MinifyTask {
 }
 
 fn minify_inner(code: &str, opts: MinifyOptions) -> anyhow::Result<TransformOutput> {
-    try_with(|cm, handler| {
-        let filename = match opts.filename {
-            Some(v) => FileName::Real(v.into()),
-            None => FileName::Anon,
-        };
+    swc_common::GLOBALS.set(&swc_common::Globals::new(), || {
+        try_with(|cm, handler| {
+            let filename = match opts.filename {
+                Some(v) => FileName::Real(v.into()),
+                None => FileName::Anon,
+            };
 
-        let fm = cm.new_source_file(filename, code.into());
+            let fm = cm.new_source_file(filename, code.into());
 
-        let scripting_enabled = opts.scripting_enabled;
-        let mut errors = vec![];
-        let doc = parse_file_as_document(
-            &fm,
-            swc_html::parser::parser::ParserConfig {
-                scripting_enabled,
-                iframe_srcdoc: opts.iframe_srcdoc,
-            },
-            &mut errors,
-        );
+            let scripting_enabled = opts.scripting_enabled;
+            let mut errors = vec![];
+            let doc = parse_file_as_document(
+                &fm,
+                swc_html::parser::parser::ParserConfig {
+                    scripting_enabled,
+                    iframe_srcdoc: opts.iframe_srcdoc,
+                },
+                &mut errors,
+            );
 
-        let mut doc = match doc {
-            Ok(v) => v,
-            Err(err) => {
-                err.to_diagnostics(handler).emit();
+            let mut doc = match doc {
+                Ok(v) => v,
+                Err(err) => {
+                    err.to_diagnostics(handler).emit();
+
+                    for err in errors {
+                        err.to_diagnostics(handler).emit();
+                    }
+
+                    bail!("failed to parse input as stylesheet")
+                }
+            };
+
+            let mut returned_errors = None;
+
+            if !errors.is_empty() {
+                returned_errors = Some(Vec::with_capacity(errors.len()));
 
                 for err in errors {
-                    err.to_diagnostics(handler).emit();
-                }
+                    let mut buf = vec![];
 
-                bail!("failed to parse input as stylesheet")
-            }
-        };
+                    err.to_diagnostics(handler).buffer(&mut buf);
 
-        let mut returned_errors = None;
-
-        if !errors.is_empty() {
-            returned_errors = Some(Vec::with_capacity(errors.len()));
-
-            for err in errors {
-                let mut buf = vec![];
-
-                err.to_diagnostics(handler).buffer(&mut buf);
-
-                for i in buf {
-                    returned_errors.as_mut().unwrap().push(Diagnostic {
-                        level: i.level.to_string(),
-                        message: i.message(),
-                        span: serde_json::to_value(&i.span)?,
-                    });
+                    for i in buf {
+                        returned_errors.as_mut().unwrap().push(Diagnostic {
+                            level: i.level.to_string(),
+                            message: i.message(),
+                            span: serde_json::to_value(&i.span)?,
+                        });
+                    }
                 }
             }
-        }
 
-        let options = swc_html_minifier::option::MinifyOptions {
-            force_set_html5_doctype: opts.force_set_html5_doctype,
-            collapse_whitespaces: opts.collapse_whitespaces,
-            remove_empty_metadata_elements: opts.remove_empty_metadata_elements,
-            remove_comments: opts.remove_comments,
-            preserve_comments: opts.preserve_comments,
-            minify_conditional_comments: opts.minify_conditional_comments,
-            remove_empty_attributes: opts.remove_empty_attributes,
-            remove_redundant_attributes: opts.remove_redundant_attributes,
-            collapse_boolean_attributes: opts.collapse_boolean_attributes,
-            normalize_attributes: opts.normalize_attributes,
-            minify_json: opts.minify_json,
-            minify_js: opts.minify_js,
-            minify_css: opts.minify_css,
-            minify_additional_scripts_content: opts.minify_additional_scripts_content,
-            minify_additional_attributes: opts.minify_additional_attributes,
-            sort_space_separated_attribute_values: opts.sort_space_separated_attribute_values,
-            sort_attributes: opts.sort_attributes,
-        };
+            let options = swc_html_minifier::option::MinifyOptions {
+                force_set_html5_doctype: opts.force_set_html5_doctype,
+                collapse_whitespaces: opts.collapse_whitespaces,
+                remove_empty_metadata_elements: opts.remove_empty_metadata_elements,
+                remove_comments: opts.remove_comments,
+                preserve_comments: opts.preserve_comments,
+                minify_conditional_comments: opts.minify_conditional_comments,
+                remove_empty_attributes: opts.remove_empty_attributes,
+                remove_redundant_attributes: opts.remove_redundant_attributes,
+                collapse_boolean_attributes: opts.collapse_boolean_attributes,
+                normalize_attributes: opts.normalize_attributes,
+                minify_json: opts.minify_json,
+                minify_js: opts.minify_js,
+                minify_css: opts.minify_css,
+                minify_additional_scripts_content: opts.minify_additional_scripts_content,
+                minify_additional_attributes: opts.minify_additional_attributes,
+                sort_space_separated_attribute_values: opts.sort_space_separated_attribute_values,
+                sort_attributes: opts.sort_attributes,
+            };
 
-        minify_document(&mut doc, &options);
+            minify_document(&mut doc, &options);
 
-        let code = {
-            let mut buf = String::new();
+            let code = {
+                let mut buf = String::new();
 
-            {
-                let mut wr = BasicHtmlWriter::new(
-                    &mut buf,
-                    None,
-                    BasicHtmlWriterConfig {
-                        ..Default::default()
-                    },
-                );
-                let mut gen = CodeGenerator::new(
-                    &mut wr,
-                    CodegenConfig {
-                        minify: true,
-                        scripting_enabled,
-                        tag_omission: opts.tag_omission,
-                        self_closing_void_elements: opts.self_closing_void_elements,
-                        quotes: opts.quotes,
-                        ..Default::default()
-                    },
-                );
+                {
+                    let mut wr = BasicHtmlWriter::new(
+                        &mut buf,
+                        None,
+                        BasicHtmlWriterConfig {
+                            ..Default::default()
+                        },
+                    );
+                    let mut gen = CodeGenerator::new(
+                        &mut wr,
+                        CodegenConfig {
+                            minify: true,
+                            scripting_enabled,
+                            tag_omission: opts.tag_omission,
+                            self_closing_void_elements: opts.self_closing_void_elements,
+                            quotes: opts.quotes,
+                            ..Default::default()
+                        },
+                    );
 
-                gen.emit(&doc).context("failed to emit")?;
-            }
+                    gen.emit(&doc).context("failed to emit")?;
+                }
 
-            buf
-        };
+                buf
+            };
 
-        Ok(TransformOutput {
-            code,
-            errors: returned_errors,
+            Ok(TransformOutput {
+                code,
+                errors: returned_errors,
+            })
         })
     })
 }
