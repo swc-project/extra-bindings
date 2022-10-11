@@ -10,17 +10,20 @@ use std::{backtrace::Backtrace, env, panic::set_hook};
 use anyhow::{bail, Context};
 use napi::{bindgen_prelude::*, Task};
 use serde::{Deserialize, Serialize};
+use swc_atoms::js_word;
 use swc_cached::regex::CachedRegex;
-use swc_common::FileName;
+use swc_common::{FileName, DUMMY_SP};
 use swc_html::{
+    ast::{DocumentMode, Namespace},
     codegen::{
         writer::basic::{BasicHtmlWriter, BasicHtmlWriterConfig},
         CodeGenerator, CodegenConfig, Emit,
     },
-    parser::parse_file_as_document,
+    parser::{parse_file_as_document, parse_file_as_document_fragment},
 };
+use swc_html_ast::{Document, DocumentFragment};
 use swc_html_minifier::{
-    minify_document,
+    minify_document, minify_document_fragment,
     option::{
         CollapseWhitespaces, MinifierType, MinifyCssOption, MinifyJsOption, MinifyJsonOption,
     },
@@ -58,6 +61,30 @@ pub struct TransformOutput {
 struct MinifyTask {
     code: String,
     options: String,
+    is_fragment: bool,
+}
+
+#[napi_derive::napi(object)]
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Attribute {
+    #[serde(default)]
+    pub namespace: Option<String>,
+    #[serde(default)]
+    pub prefix: Option<String>,
+    pub name: String,
+    #[serde(default)]
+    pub value: Option<String>,
+}
+
+#[napi_derive::napi(object)]
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Element {
+    pub tag_name: String,
+    pub namespace: String,
+    pub attributes: Vec<Attribute>,
+    pub is_self_closing: bool,
 }
 
 #[derive(Debug, Deserialize)]
@@ -71,6 +98,18 @@ pub struct MinifyOptions {
     iframe_srcdoc: bool,
     #[serde(default)]
     scripting_enabled: bool,
+    /// Used only for Document Fragment
+    /// Default: NoQuirks
+    #[serde(default)]
+    mode: Option<DocumentMode>,
+    /// Used only for Document Fragment
+    /// Default: `template` in HTML namespace
+    #[serde(default)]
+    context_element: Option<Element>,
+    /// Used only for Document Fragment
+    /// Default: None
+    #[serde(default)]
+    form_element: Option<Element>,
 
     // Minification options
     #[serde(default)]
@@ -166,7 +205,7 @@ impl Task for MinifyTask {
             .context("failed to deserialize minifier options")
             .convert_err()?;
 
-        minify_inner(&self.code, opts).convert_err()
+        minify_inner(&self.code, opts, self.is_fragment).convert_err()
     }
 
     fn resolve(&mut self, _env: napi::Env, output: Self::Output) -> napi::Result<Self::JsValue> {
@@ -174,7 +213,61 @@ impl Task for MinifyTask {
     }
 }
 
-fn minify_inner(code: &str, opts: MinifyOptions) -> anyhow::Result<TransformOutput> {
+enum DocumentOrDocumentFragment {
+    Document(Document),
+    DocumentFragment(DocumentFragment),
+}
+
+fn create_namespace(namespace: &str) -> anyhow::Result<Namespace> {
+    match &*namespace.to_lowercase() {
+        "http://www.w3.org/1999/xhtml" => Ok(Namespace::HTML),
+        "http://www.w3.org/1998/math/mathml" => Ok(Namespace::MATHML),
+        "http://www.w3.org/2000/svg" => Ok(Namespace::SVG),
+        "http://www.w3.org/1999/xlink" => Ok(Namespace::XLINK),
+        "http://www.w3.org/xml/1998/namespace" => Ok(Namespace::XML),
+        "http://www.w3.org/2000/xmlns/" => Ok(Namespace::XMLNS),
+        _ => {
+            bail!("failed to parse namespace of context element")
+        }
+    }
+}
+
+fn create_element(context_element: Element) -> anyhow::Result<swc_html_ast::Element> {
+    let mut attributes = Vec::with_capacity(context_element.attributes.len());
+
+    for attribute in context_element.attributes.into_iter() {
+        let namespace = match attribute.namespace {
+            Some(namespace) => Some(create_namespace(&*namespace)?),
+            _ => None,
+        };
+
+        attributes.push(swc_html_ast::Attribute {
+            span: DUMMY_SP,
+            namespace,
+            prefix: attribute.prefix.map(|value| value.into()),
+            name: attribute.name.into(),
+            raw_name: None,
+            value: attribute.value.map(|value| value.into()),
+            raw_value: None,
+        })
+    }
+
+    Ok(swc_html_ast::Element {
+        span: DUMMY_SP,
+        tag_name: context_element.tag_name.into(),
+        namespace: create_namespace(&*context_element.namespace)?,
+        attributes,
+        children: vec![],
+        content: None,
+        is_self_closing: context_element.is_self_closing,
+    })
+}
+
+fn minify_inner(
+    code: &str,
+    opts: MinifyOptions,
+    is_fragment: bool,
+) -> anyhow::Result<TransformOutput> {
     swc_common::GLOBALS.set(&swc_common::Globals::new(), || {
         try_with(|cm, handler| {
             let filename = match opts.filename {
@@ -186,26 +279,81 @@ fn minify_inner(code: &str, opts: MinifyOptions) -> anyhow::Result<TransformOutp
 
             let scripting_enabled = opts.scripting_enabled;
             let mut errors = vec![];
-            let doc = parse_file_as_document(
-                &fm,
-                swc_html::parser::parser::ParserConfig {
-                    scripting_enabled,
-                    iframe_srcdoc: opts.iframe_srcdoc,
-                },
-                &mut errors,
-            );
 
-            let mut doc = match doc {
-                Ok(v) => v,
-                Err(err) => {
-                    err.to_diagnostics(handler).emit();
+            let (mut document_or_document_fragment, context_element) = if is_fragment {
+                let context_element = match opts.context_element {
+                    Some(context_element) => create_element(context_element)?,
+                    _ => swc_html_ast::Element {
+                        span: DUMMY_SP,
+                        tag_name: js_word!("template"),
+                        namespace: Namespace::HTML,
+                        attributes: vec![],
+                        children: vec![],
+                        content: None,
+                        is_self_closing: false,
+                    },
+                };
+                let mode = match opts.mode {
+                    Some(mode) => mode,
+                    _ => DocumentMode::NoQuirks,
+                };
+                let form_element = match opts.form_element {
+                    Some(form_element) => Some(create_element(form_element)?),
+                    _ => None,
+                };
+                let document_fragment = parse_file_as_document_fragment(
+                    &fm,
+                    &context_element,
+                    mode,
+                    form_element.as_ref(),
+                    swc_html::parser::parser::ParserConfig {
+                        scripting_enabled,
+                        iframe_srcdoc: opts.iframe_srcdoc,
+                    },
+                    &mut errors,
+                );
 
-                    for err in errors {
+                let document_fragment = match document_fragment {
+                    Ok(v) => v,
+                    Err(err) => {
                         err.to_diagnostics(handler).emit();
-                    }
 
-                    bail!("failed to parse input as stylesheet")
-                }
+                        for err in errors {
+                            err.to_diagnostics(handler).emit();
+                        }
+
+                        bail!("failed to parse input as document fragment")
+                    }
+                };
+
+                (
+                    DocumentOrDocumentFragment::DocumentFragment(document_fragment),
+                    Some(context_element),
+                )
+            } else {
+                let document = parse_file_as_document(
+                    &fm,
+                    swc_html::parser::parser::ParserConfig {
+                        scripting_enabled,
+                        iframe_srcdoc: opts.iframe_srcdoc,
+                    },
+                    &mut errors,
+                );
+
+                let document = match document {
+                    Ok(v) => v,
+                    Err(err) => {
+                        err.to_diagnostics(handler).emit();
+
+                        for err in errors {
+                            err.to_diagnostics(handler).emit();
+                        }
+
+                        bail!("failed to parse input as document")
+                    }
+                };
+
+                (DocumentOrDocumentFragment::Document(document), None)
             };
 
             let mut returned_errors = None;
@@ -248,7 +396,18 @@ fn minify_inner(code: &str, opts: MinifyOptions) -> anyhow::Result<TransformOutp
                 sort_attributes: opts.sort_attributes,
             };
 
-            minify_document(&mut doc, &options);
+            match document_or_document_fragment {
+                DocumentOrDocumentFragment::Document(ref mut document) => {
+                    minify_document(document, &options);
+                }
+                DocumentOrDocumentFragment::DocumentFragment(ref mut document_fragment) => {
+                    minify_document_fragment(
+                        document_fragment,
+                        context_element.as_ref().unwrap(),
+                        &options,
+                    );
+                }
+            }
 
             let code = {
                 let mut buf = String::new();
@@ -266,14 +425,21 @@ fn minify_inner(code: &str, opts: MinifyOptions) -> anyhow::Result<TransformOutp
                         CodegenConfig {
                             minify: true,
                             scripting_enabled,
+                            context_element: context_element.as_ref(),
                             tag_omission: opts.tag_omission,
                             self_closing_void_elements: opts.self_closing_void_elements,
                             quotes: opts.quotes,
-                            ..Default::default()
                         },
                     );
 
-                    gen.emit(&doc).context("failed to emit")?;
+                    match document_or_document_fragment {
+                        DocumentOrDocumentFragment::Document(document) => {
+                            gen.emit(&document).context("failed to emit")?;
+                        }
+                        DocumentOrDocumentFragment::DocumentFragment(document_fragment) => {
+                            gen.emit(&document_fragment).context("failed to emit")?;
+                        }
+                    }
                 }
 
                 buf
@@ -294,7 +460,31 @@ fn minify(code: Buffer, opts: Buffer, signal: Option<AbortSignal>) -> AsyncTask<
     let code = String::from_utf8_lossy(code.as_ref()).to_string();
     let options = String::from_utf8_lossy(opts.as_ref()).to_string();
 
-    let task = MinifyTask { code, options };
+    let task = MinifyTask {
+        code,
+        options,
+        is_fragment: false,
+    };
+
+    AsyncTask::with_optional_signal(task, signal)
+}
+
+#[allow(unused)]
+#[napi]
+fn minify_fragment(
+    code: Buffer,
+    opts: Buffer,
+    signal: Option<AbortSignal>,
+) -> AsyncTask<MinifyTask> {
+    swc_nodejs_common::init_default_trace_subscriber();
+    let code = String::from_utf8_lossy(code.as_ref()).to_string();
+    let options = String::from_utf8_lossy(opts.as_ref()).to_string();
+
+    let task = MinifyTask {
+        code,
+        options,
+        is_fragment: true,
+    };
 
     AsyncTask::with_optional_signal(task, signal)
 }
@@ -304,7 +494,17 @@ fn minify(code: Buffer, opts: Buffer, signal: Option<AbortSignal>) -> AsyncTask<
 pub fn minify_sync(code: Buffer, opts: Buffer) -> napi::Result<TransformOutput> {
     swc_nodejs_common::init_default_trace_subscriber();
     let code = String::from_utf8_lossy(code.as_ref()).to_string();
-    let opts = get_deserialized(opts)?;
+    let options = get_deserialized(opts)?;
 
-    minify_inner(&code, opts).convert_err()
+    minify_inner(&code, options, false).convert_err()
+}
+
+#[allow(unused)]
+#[napi]
+pub fn minify_fragment_sync(code: Buffer, opts: Buffer) -> napi::Result<TransformOutput> {
+    swc_nodejs_common::init_default_trace_subscriber();
+    let code = String::from_utf8_lossy(code.as_ref()).to_string();
+    let options = get_deserialized(opts)?;
+
+    minify_inner(&code, options, true).convert_err()
 }

@@ -44,7 +44,11 @@ var __importStar =
     return result;
   };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.minifySync = exports.minify = void 0;
+exports.minifyFragmentSync =
+  exports.minifySync =
+  exports.minifyFragment =
+  exports.minify =
+    void 0;
 const binding = __importStar(require("./binding"));
 async function minify(content, options) {
   return binding.minify(
@@ -53,6 +57,13 @@ async function minify(content, options) {
   );
 }
 exports.minify = minify;
+async function minifyFragment(content, options) {
+  return binding.minifyFragment(
+    content,
+    toBuffer(options !== null && options !== void 0 ? options : {})
+  );
+}
+exports.minifyFragment = minifyFragment;
 function minifySync(content, options) {
   return binding.minifySync(
     content,
@@ -60,6 +71,13 @@ function minifySync(content, options) {
   );
 }
 exports.minifySync = minifySync;
+async function minifyFragmentSync(content, options) {
+  return binding.minifyFragmentSync(
+    content,
+    toBuffer(options !== null && options !== void 0 ? options : {})
+  );
+}
+exports.minifyFragmentSync = minifyFragmentSync;
 function toBuffer(t) {
   return Buffer.from(JSON.stringify(t));
 }
