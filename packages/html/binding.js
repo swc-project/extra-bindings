@@ -240,7 +240,10 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`);
 }
 
-const { minify, minifySync } = nativeBinding;
+const { minify, minifyFragment, minifySync, minifyFragmentSync } =
+  nativeBinding;
 
 module.exports.minify = minify;
+module.exports.minifyFragment = minifyFragment;
 module.exports.minifySync = minifySync;
+module.exports.minifyFragmentSync = minifyFragmentSync;
