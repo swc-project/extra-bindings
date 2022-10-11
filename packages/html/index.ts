@@ -35,6 +35,12 @@ type Options = {
   quotes?: boolean;
 };
 
+type FragmentOptions = Options & {
+  mode?: "no-quirks" | "limited-quirks" | "quirks";
+  context_element?: binding.Element;
+  form_element?: binding.Element;
+};
+
 export async function minify(
   content: Buffer,
   options?: Options
@@ -42,11 +48,25 @@ export async function minify(
   return binding.minify(content, toBuffer(options ?? {}));
 }
 
+export async function minifyFragment(
+  content: Buffer,
+  options?: FragmentOptions
+): Promise<binding.TransformOutput> {
+  return binding.minifyFragment(content, toBuffer(options ?? {}));
+}
+
 export function minifySync(
   content: Buffer,
   options?: Options
 ): binding.TransformOutput {
   return binding.minifySync(content, toBuffer(options ?? {}));
+}
+
+export async function minifyFragmentSync(
+  content: Buffer,
+  options?: FragmentOptions
+): Promise<binding.TransformOutput> {
+  return binding.minifyFragmentSync(content, toBuffer(options ?? {}));
 }
 
 function toBuffer(t: any): Buffer {

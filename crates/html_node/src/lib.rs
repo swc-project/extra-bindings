@@ -14,7 +14,7 @@ use swc_atoms::js_word;
 use swc_cached::regex::CachedRegex;
 use swc_common::{FileName, DUMMY_SP};
 use swc_html::{
-    ast::{DocumentMode, Element, Namespace},
+    ast::{DocumentMode, Namespace},
     codegen::{
         writer::basic::{BasicHtmlWriter, BasicHtmlWriterConfig},
         CodeGenerator, CodegenConfig, Emit,
@@ -64,6 +64,29 @@ struct MinifyTask {
     is_fragment: bool,
 }
 
+#[napi_derive::napi(object)]
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Attribute {
+    #[serde(default)]
+    pub namespace: Option<String>,
+    #[serde(default)]
+    pub prefix: Option<String>,
+    pub name: String,
+    #[serde(default)]
+    pub value: Option<String>,
+}
+
+#[napi_derive::napi(object)]
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Element {
+    pub tag_name: String,
+    pub namespace: String,
+    pub attributes: Vec<Attribute>,
+    pub is_self_closing: bool,
+}
+
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MinifyOptions {
@@ -75,6 +98,18 @@ pub struct MinifyOptions {
     iframe_srcdoc: bool,
     #[serde(default)]
     scripting_enabled: bool,
+    /// Used only for Document Fragment
+    /// Default: NoQuirks
+    #[serde(default)]
+    mode: Option<DocumentMode>,
+    /// Used only for Document Fragment
+    /// Default: `template` in HTML namespace
+    #[serde(default)]
+    context_element: Option<Element>,
+    /// Used only for Document Fragment
+    /// Default: None
+    #[serde(default)]
+    form_element: Option<Element>,
 
     // Minification options
     #[serde(default)]
@@ -183,6 +218,51 @@ enum DocumentOrDocumentFragment {
     DocumentFragment(DocumentFragment),
 }
 
+fn create_namespace(namespace: &str) -> anyhow::Result<Namespace> {
+    match &*namespace.to_lowercase() {
+        "http://www.w3.org/1999/xhtml" => Ok(Namespace::HTML),
+        "http://www.w3.org/1998/math/mathml" => Ok(Namespace::MATHML),
+        "http://www.w3.org/2000/svg" => Ok(Namespace::SVG),
+        "http://www.w3.org/1999/xlink" => Ok(Namespace::XLINK),
+        "http://www.w3.org/xml/1998/namespace" => Ok(Namespace::XML),
+        "http://www.w3.org/2000/xmlns/" => Ok(Namespace::XMLNS),
+        _ => {
+            bail!("failed to parse namespace of context element")
+        }
+    }
+}
+
+fn create_element(context_element: Element) -> anyhow::Result<swc_html_ast::Element> {
+    let mut attributes = Vec::with_capacity(context_element.attributes.len());
+
+    for attribute in context_element.attributes.into_iter() {
+        let namespace = match attribute.namespace {
+            Some(namespace) => Some(create_namespace(&*namespace)?),
+            _ => None,
+        };
+
+        attributes.push(swc_html_ast::Attribute {
+            span: DUMMY_SP,
+            namespace,
+            prefix: attribute.prefix.map(|value| value.into()),
+            name: attribute.name.into(),
+            raw_name: None,
+            value: attribute.value.map(|value| value.into()),
+            raw_value: None,
+        })
+    }
+
+    Ok(swc_html_ast::Element {
+        span: DUMMY_SP,
+        tag_name: context_element.tag_name.into(),
+        namespace: create_namespace(&*context_element.namespace)?,
+        attributes,
+        children: vec![],
+        content: None,
+        is_self_closing: context_element.is_self_closing,
+    })
+}
+
 fn minify_inner(
     code: &str,
     opts: MinifyOptions,
@@ -201,22 +281,31 @@ fn minify_inner(
             let mut errors = vec![];
 
             let (mut document_or_document_fragment, context_element) = if is_fragment {
-                let context_element = Element {
-                    span: DUMMY_SP,
-                    tag_name: js_word!("template"),
-                    namespace: Namespace::HTML,
-                    attributes: vec![],
-                    children: vec![],
-                    content: None,
-                    is_self_closing: false,
+                let context_element = match opts.context_element {
+                    Some(context_element) => create_element(context_element)?,
+                    _ => swc_html_ast::Element {
+                        span: DUMMY_SP,
+                        tag_name: js_word!("template"),
+                        namespace: Namespace::HTML,
+                        attributes: vec![],
+                        children: vec![],
+                        content: None,
+                        is_self_closing: false,
+                    },
                 };
-                let mode = DocumentMode::NoQuirks;
-                let form_element = None;
+                let mode = match opts.mode {
+                    Some(mode) => mode,
+                    _ => DocumentMode::NoQuirks,
+                };
+                let form_element = match opts.form_element {
+                    Some(form_element) => Some(create_element(form_element)?),
+                    _ => None,
+                };
                 let document_fragment = parse_file_as_document_fragment(
                     &fm,
                     &context_element,
                     mode,
-                    form_element,
+                    form_element.as_ref(),
                     swc_html::parser::parser::ParserConfig {
                         scripting_enabled,
                         iframe_srcdoc: opts.iframe_srcdoc,
@@ -233,7 +322,7 @@ fn minify_inner(
                             err.to_diagnostics(handler).emit();
                         }
 
-                        bail!("failed to parse input as stylesheet")
+                        bail!("failed to parse input as document fragment")
                     }
                 };
 
@@ -260,7 +349,7 @@ fn minify_inner(
                             err.to_diagnostics(handler).emit();
                         }
 
-                        bail!("failed to parse input as stylesheet")
+                        bail!("failed to parse input as document")
                     }
                 };
 
