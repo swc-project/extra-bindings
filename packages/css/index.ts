@@ -1,6 +1,6 @@
 import * as binding from "./binding";
 
-type Options = {
+export type Options = {
   filename?: string;
   sourceMap?: boolean;
 };
