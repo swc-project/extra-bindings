@@ -1,6 +1,6 @@
 {
   "name": "@swc/html",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "description": "Super-fast alternative for posthtml",
   "homepage": "https://swc.rs",
   "main": "./index.js",

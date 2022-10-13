@@ -1,8 +1,8 @@
 import * as binding from "./binding";
 
-type MinifierType = "js-module" | "js-script" | "json" | "css" | "html";
+export type MinifierType = "js-module" | "js-script" | "json" | "css" | "html";
 
-type Options = {
+export type Options = {
   filename?: string;
   iframeSrcdoc?: boolean;
   scriptingEnabled?: boolean;
@@ -35,7 +35,7 @@ type Options = {
   quotes?: boolean;
 };
 
-type FragmentOptions = Options & {
+export type FragmentOptions = Options & {
   mode?: "no-quirks" | "limited-quirks" | "quirks";
   context_element?: binding.Element;
   form_element?: binding.Element;
