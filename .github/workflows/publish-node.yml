@@ -50,7 +50,7 @@ jobs:
             build: >-
               set -e &&
               export CARGO_PROFILE_RELEASE_LTO=false &&
-              RUSTFLAGS='-C target-feature=+sse2 -C target-feature=-crt-static -Z new-llvm-pass-manager=no' yarn workspaces run build &&
+              RUSTFLAGS='-C target-feature=-crt-static' yarn workspaces run build &&
               llvm-strip -x packages/*/*.node
           - host: macos-latest
             target: aarch64-apple-darwin
@@ -114,7 +114,7 @@ jobs:
             build: >-
               rustup toolchain install $(cat ./rust-toolchain) &&
               rustup target add aarch64-unknown-linux-musl &&
-              env RUSTFLAGS='-C target-feature=-crt-static -Z new-llvm-pass-manager=no' yarn workspaces run build --target=aarch64-unknown-linux-musl &&
+              env RUSTFLAGS='-C target-feature=-crt-static' yarn workspaces run build --target=aarch64-unknown-linux-musl &&
               /aarch64-linux-musl-cross/bin/aarch64-linux-musl-strip packages/*/*.node
           - host: windows-latest
             target: aarch64-pc-windows-msvc
