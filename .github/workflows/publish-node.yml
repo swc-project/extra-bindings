@@ -50,7 +50,7 @@ jobs:
             build: >-
               set -e &&
               export CARGO_PROFILE_RELEASE_LTO=false &&
-              RUSTFLAGS='-C target-feature=-crt-static' yarn workspaces run build &&
+              unset CC_x86_64_unknown_linux_gnu && unset CC && RUSTFLAGS='-C target-feature=-crt-static' yarn workspaces run build &&
               llvm-strip -x packages/*/*.node
           - host: macos-latest
             target: aarch64-apple-darwin
