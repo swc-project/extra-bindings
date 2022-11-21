@@ -2,6 +2,7 @@
 members = [
   "crates/css_node",
   "crates/html_node",
+  "crates/lint_node",
 ]
 
 [profile.release]
