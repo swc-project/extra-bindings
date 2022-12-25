@@ -260,6 +260,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "estree_node"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "napi",
+ "napi-build",
+ "napi-derive",
+ "serde",
+ "serde_json",
+ "swc_common",
+ "swc_error_reporters",
+ "swc_nodejs_common",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "fixedbitset"
 version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
