@@ -157,7 +157,7 @@ fn minify_inner(code: &str, opts: MinifyOptions) -> anyhow::Result<TransformOutp
         };
 
         let map = if opts.source_map {
-            let map = cm.build_source_map(&mut src_map);
+            let map = cm.build_source_map(&src_map);
             let mut buf = vec![];
             map.to_writer(&mut buf)
                 .context("failed to generate sourcemap")?;
