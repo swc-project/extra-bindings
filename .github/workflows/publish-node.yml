@@ -537,6 +537,7 @@ jobs:
       - name: Copy binaries
         shell: bash
         run: |
+          ./scripts/move-artifacts.sh estree || true
           ./scripts/move-artifacts.sh css || true
           ./scripts/move-artifacts.sh html || true
 
@@ -552,6 +553,7 @@ jobs:
         if: ${{ startsWith(github.ref, 'refs/tags/v') }}
         run: |
           echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+          (cd packages/estree && npm publish --access public || true)
           (cd packages/css && npm publish --access public || true)
           (cd packages/html && npm publish --access public || true)
         env:
