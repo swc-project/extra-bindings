@@ -48,14 +48,14 @@ pub struct TransformOutput {
     pub errors: Option<Vec<Diagnostic>>,
 }
 
-struct MinifyTask {
+struct LintTask {
     code: String,
     options: String,
 }
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct MinifyOptions {
+pub struct LintOptions {
     #[serde(default)]
     filename: Option<String>,
     #[serde(default)]
@@ -67,7 +67,7 @@ pub struct MinifyOptions {
 }
 
 #[napi]
-impl Task for MinifyTask {
+impl Task for LintTask {
     type JsValue = TransformOutput;
     type Output = TransformOutput;
 
@@ -76,7 +76,7 @@ impl Task for MinifyTask {
             .context("failed to deserialize minifier options")
             .convert_err()?;
 
-        minify_inner(&self.code, opts).convert_err()
+        lint_inner(&self.code, opts).convert_err()
     }
 
     fn resolve(&mut self, _env: napi::Env, output: Self::Output) -> napi::Result<Self::JsValue> {
@@ -84,7 +84,7 @@ impl Task for MinifyTask {
     }
 }
 
-fn minify_inner(code: &str, opts: MinifyOptions) -> anyhow::Result<TransformOutput> {
+fn lint_inner(code: &str, opts: LintOptions) -> anyhow::Result<TransformOutput> {
     try_with(|cm, handler| {
         let filename = match opts.filename {
             Some(v) => FileName::Real(v.into()),
@@ -143,20 +143,20 @@ fn minify_inner(code: &str, opts: MinifyOptions) -> anyhow::Result<TransformOutp
 
 #[allow(unused)]
 #[napi]
-fn minify(code: Buffer, opts: Buffer, signal: Option<AbortSignal>) -> AsyncTask<MinifyTask> {
+fn lint(code: Buffer, opts: Buffer, signal: Option<AbortSignal>) -> AsyncTask<LintTask> {
     let code = String::from_utf8_lossy(code.as_ref()).to_string();
     let options = String::from_utf8_lossy(opts.as_ref()).to_string();
 
-    let task = MinifyTask { code, options };
+    let task = LintTask { code, options };
 
     AsyncTask::with_optional_signal(task, signal)
 }
 
 #[allow(unused)]
 #[napi]
-pub fn minify_sync(code: Buffer, opts: Buffer) -> napi::Result<TransformOutput> {
+pub fn lint_sync(code: Buffer, opts: Buffer) -> napi::Result<TransformOutput> {
     let code = String::from_utf8_lossy(code.as_ref()).to_string();
     let opts = get_deserialized(opts)?;
 
-    minify_inner(&code, opts).convert_err()
+    lint_inner(&code, opts).convert_err()
 }
