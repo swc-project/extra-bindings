@@ -24,9 +24,9 @@ where
             };
 
             if let Some(s) = p.downcast_ref::<String>() {
-                Err(anyhow!(s))
+                Err(anyhow!(s.to_string()))
             } else if let Some(s) = p.downcast_ref::<&str>() {
-                Err(anyhow!(s))
+                Err(anyhow!(s.to_string()))
             } else {
                 Err(anyhow!("failed to handle with unknown panic message"))
             }
