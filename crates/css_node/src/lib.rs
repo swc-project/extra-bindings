@@ -92,6 +92,8 @@ fn minify_inner(code: &str, opts: MinifyOptions) -> anyhow::Result<TransformOutp
             &fm,
             swc_css_parser::parser::ParserConfig {
                 allow_wrong_line_comments: false,
+                css_modules: false,
+                legacy_nesting: false,
             },
             &mut errors,
         );

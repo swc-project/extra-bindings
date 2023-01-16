@@ -24,6 +24,7 @@ use swc_html_minifier::{
     minify_document, minify_document_fragment,
     option::{
         CollapseWhitespaces, MinifierType, MinifyCssOption, MinifyJsOption, MinifyJsonOption,
+        RemoveRedundantAttributes,
     },
 };
 use swc_nodejs_common::{deserialize_json, get_deserialized, MapErr};
@@ -126,8 +127,8 @@ pub struct MinifyOptions {
     minify_conditional_comments: bool,
     #[serde(default = "true_by_default")]
     remove_empty_attributes: bool,
-    #[serde(default = "true_by_default")]
-    remove_redundant_attributes: bool,
+    #[serde(default)]
+    remove_redundant_attributes: RemoveRedundantAttributes,
     #[serde(default = "true_by_default")]
     collapse_boolean_attributes: bool,
     #[serde(default = "true_by_default")]
@@ -146,6 +147,8 @@ pub struct MinifyOptions {
     sort_space_separated_attribute_values: bool,
     #[serde(default)]
     sort_attributes: bool,
+    #[serde(default = "true_by_default")]
+    merge_metadata_elements: bool,
 
     // Codegen options
     #[serde(default)]
@@ -392,6 +395,7 @@ fn minify_inner(
                 minify_additional_attributes: opts.minify_additional_attributes,
                 sort_space_separated_attribute_values: opts.sort_space_separated_attribute_values,
                 sort_attributes: opts.sort_attributes,
+                merge_metadata_elements: opts.merge_metadata_elements,
             };
 
             match document_or_document_fragment {
