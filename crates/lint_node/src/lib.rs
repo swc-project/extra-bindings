@@ -73,7 +73,7 @@ impl Task for LintTask {
 
     fn compute(&mut self) -> napi::Result<Self::Output> {
         let opts = deserialize_json(&self.options)
-            .context("failed to deserialize minifier options")
+            .context("failed to deserialize linter options")
             .convert_err()?;
 
         lint_inner(&self.code, opts).convert_err()
