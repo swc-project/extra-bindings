@@ -1,0 +1,42 @@
+[package]
+authors = ["Mathis Møller"]
+build = "build.rs"
+edition = "2021"
+exclude = ["artifacts.json", "index.node"]
+license = "Apache-2.0"
+name = "lint_node"
+publish = false
+version = "0.1.0"
+
+[lib]
+bench = false
+crate-type = ["cdylib"]
+
+[features]
+
+[build-dependencies]
+napi-build = { version = "2" }
+
+[dependencies]
+anyhow = "1"
+napi = { version = "2", default-features = false, features = [
+  "napi3",
+  "serde-json",
+] }
+napi-derive = { version = "2", default-features = false, features = [
+  "type-def",
+] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+swc_atoms = "0.4.33"
+swc_common = { version = "0.29.27", features = ["diagnostic-serde"] }
+swc_ecma_ast = "0.96.0"
+swc_ecma_lints = "0.68.1"
+swc_ecma_minifier = "0.162.0"
+swc_ecma_parser = "0.124.0"
+swc_ecma_transforms_base = "0.113.1"
+swc_ecma_visit = "0.82.0"
+swc_error_reporters = "0.13.28"
+swc_nodejs_common = "0.0.4"
+tracing = { version = "0.1.37", features = ["release_max_level_info"] }
+tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }
