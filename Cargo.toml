@@ -1,9 +1,5 @@
 [workspace]
-members = [
-  "crates/css_node",
-  "crates/html_node",
-  "crates/lint_node",
-]
+members = ["crates/css_node", "crates/html_node", "crates/linter_node"]
 
 [profile.release]
 codegen-units = 1
