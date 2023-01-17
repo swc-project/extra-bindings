@@ -1,6 +1,6 @@
 {
   "name": "@swc/linter",
-  "version": "0.0.1",
+  "version": "0.0.20",
   "description": "Super-fast linter based on SWC",
   "homepage": "https://swc.rs",
   "main": "./binding.js",

@@ -1,6 +1,6 @@
 {
   "name": "@swc/css",
-  "version": "0.0.18",
+  "version": "0.0.20",
   "description": "Super-fast alternative for postcss",
   "homepage": "https://swc.rs",
   "main": "./index.js",
