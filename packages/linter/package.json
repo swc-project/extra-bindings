@@ -1,5 +1,5 @@
 {
-  "name": "@swc/lint",
+  "name": "@swc/linter",
   "version": "0.0.1",
   "description": "Super-fast linter based on SWC",
   "homepage": "https://swc.rs",
