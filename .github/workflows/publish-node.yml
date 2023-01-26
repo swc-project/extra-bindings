@@ -24,24 +24,24 @@ jobs:
           - host: macos-latest
             target: x86_64-apple-darwin
             build: |
-              yarn workspaces run build
+              pnpm -r build
               strip -x packages/*/*.node
           - host: windows-latest
             build: |
-              yarn workspaces run build
+              pnpm -r build
             target: x86_64-pc-windows-msvc
           - host: windows-latest
             build: |
               export CARGO_PROFILE_RELEASE_LTO=false
-              yarn workspaces run build --target i686-pc-windows-msvc --cargo-flags="--no-default-features"
-              yarn workspaces run test
+              pnpm -r build --target i686-pc-windows-msvc --cargo-flags="--no-default-features"
+              pnpm -r test
             target: i686-pc-windows-msvc
           - host: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian
             build: >-
               set -e &&
-              unset CC_x86_64_unknown_linux_gnu && unset CC && yarn workspaces run build --target x86_64-unknown-linux-gnu &&
+              unset CC_x86_64_unknown_linux_gnu && unset CC && pnpm -r build --target x86_64-unknown-linux-gnu &&
               strip packages/*/*.node
           - host: ubuntu-latest
             target: x86_64-unknown-linux-musl
@@ -50,7 +50,7 @@ jobs:
             build: >-
               set -e &&
               export CARGO_PROFILE_RELEASE_LTO=false &&
-              RUSTFLAGS='-C target-feature=-crt-static' yarn workspaces run build &&
+              RUSTFLAGS='-C target-feature=-crt-static' pnpm -r run build &&
               llvm-strip -x packages/*/*.node
           - host: macos-latest
             target: aarch64-apple-darwin
@@ -60,7 +60,7 @@ jobs:
               export CXX=$(xcrun -f clang++);
               SYSROOT=$(xcrun --sdk macosx --show-sdk-path);
               export CFLAGS="-isysroot $SYSROOT -isystem $SYSROOT";
-              yarn workspaces run build --target=aarch64-apple-darwin
+              pnpm -r build --target=aarch64-apple-darwin
               strip -x packages/*/*.node
           - host: ubuntu-latest
             target: aarch64-unknown-linux-gnu
@@ -69,7 +69,7 @@ jobs:
               set -e &&
               rustup target add aarch64-unknown-linux-gnu &&
               export CC_aarch64_unknown_linux_gnu=/usr/aarch64-unknown-linux-gnu/bin/aarch64-unknown-linux-gnu-gcc &&
-              yarn workspaces run build --target aarch64-unknown-linux-gnu &&
+              pnpm -r build --target aarch64-unknown-linux-gnu &&
               llvm-strip -x packages/*/*.node
           - host: ubuntu-18.04
             target: armv7-unknown-linux-gnueabihf
@@ -77,7 +77,7 @@ jobs:
               sudo apt-get update
               sudo apt-get install gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf -y
             build: |
-              yarn workspaces run build --target=armv7-unknown-linux-gnueabihf --cargo-flags='--no-default-features'
+              pnpm -r build --target=armv7-unknown-linux-gnueabihf --cargo-flags='--no-default-features'
               arm-linux-gnueabihf-strip packages/*/*.node
           - host: ubuntu-latest
             target: aarch64-linux-android
@@ -91,7 +91,7 @@ jobs:
               touch "${ANDROID_NDK_LATEST_HOME}/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/${CLANG_VERSION}/lib/linux/aarch64/libgcc.a"
               chmod 777 "${ANDROID_NDK_LATEST_HOME}/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/${CLANG_VERSION}/lib/linux/aarch64/libgcc.a"
               echo "INPUT(-lunwind)" > "${ANDROID_NDK_LATEST_HOME}/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/${CLANG_VERSION}/lib/linux/aarch64/libgcc.a"
-              yarn workspaces run build --target aarch64-linux-android
+              pnpm -r build --target aarch64-linux-android
               ${ANDROID_NDK_LATEST_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip packages/*/*.node
           - host: ubuntu-latest
             target: armv7-linux-androideabi
@@ -105,7 +105,7 @@ jobs:
               touch "${ANDROID_NDK_LATEST_HOME}/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/${CLANG_VERSION}/lib/linux/arm/libgcc.a"
               chmod 777 "${ANDROID_NDK_LATEST_HOME}/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/${CLANG_VERSION}/lib/linux/arm/libgcc.a"
               echo "INPUT(-lunwind)" > "${ANDROID_NDK_LATEST_HOME}/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/${CLANG_VERSION}/lib/linux/arm/libgcc.a"
-              yarn workspaces run build --target armv7-linux-androideabi
+              pnpm -r build --target armv7-linux-androideabi
               ${ANDROID_NDK_LATEST_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip packages/*/*.node
           - host: ubuntu-latest
             target: aarch64-unknown-linux-musl
@@ -114,7 +114,7 @@ jobs:
             build: >-
               rustup toolchain install $(cat ./rust-toolchain) &&
               rustup target add aarch64-unknown-linux-musl &&
-              env RUSTFLAGS='-C target-feature=-crt-static' yarn workspaces run build --target=aarch64-unknown-linux-musl &&
+              env RUSTFLAGS='-C target-feature=-crt-static' pnpm -r build --target=aarch64-unknown-linux-musl &&
               /aarch64-linux-musl-cross/bin/aarch64-linux-musl-strip packages/*/*.node
           - host: windows-latest
             target: aarch64-pc-windows-msvc
@@ -122,7 +122,7 @@ jobs:
             build: |
               export CARGO_PROFILE_RELEASE_CODEGEN_UNITS=256
               export CARGO_PROFILE_RELEASE_LTO=false
-              yarn workspaces run build --target aarch64-pc-windows-msvc --cargo-flags='--no-default-features'
+              pnpm -r build --target aarch64-pc-windows-msvc --cargo-flags='--no-default-features'
     name: stable - ${{ matrix.settings.target }} - node@16
     runs-on: ${{ matrix.settings.host }}
     steps:
@@ -133,7 +133,7 @@ jobs:
         with:
           node-version: 16
           check-latest: true
-          cache: yarn
+          cache: pnpm
           architecture: x64
       - name: Setup node x86
         uses: actions/setup-node@v3
@@ -141,7 +141,7 @@ jobs:
         with:
           node-version: 16
           check-latest: true
-          cache: yarn
+          cache: pnpm
           architecture: x86
       - name: Install
         uses: actions-rs/toolchain@v1
@@ -153,7 +153,7 @@ jobs:
       - name: Install node dependencies
         shell: bash
         run: |
-          yarn
+          pnpm install --frozen-lockfile
       - name: Cache cargo registry
         uses: actions/cache@v3
         with:
@@ -176,7 +176,7 @@ jobs:
         if: ${{ matrix.settings.setup }}
         shell: bash
       - name: Install dependencies
-        run: yarn install --ignore-scripts --registry https://registry.npmjs.org --network-timeout 300000
+        run: pnpm install --frozen-lockfile --ignore-scripts
       - name: Build in docker
         uses: addnab/docker-run-action@v3
         if: ${{ matrix.settings.docker }}
@@ -204,12 +204,12 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: "16"
-          cache: "yarn"
+          cache: "pnpm"
 
       - name: Install node dependencies
         shell: bash
         run: |
-          yarn
+          pnpm install --frozen-lockfile
       - name: Build
         id: build
         uses: vmactions/freebsd-vm@v0.2.3
@@ -227,7 +227,7 @@ jobs:
           prepare: |
             pkg install -y curl node14
             curl -qL https://www.npmjs.com/install.sh | sh
-            npm install --location=global --ignore-scripts yarn
+            npm install --location=global --ignore-scripts pnpm
             curl https://sh.rustup.rs -sSf --output rustup.sh
             sh rustup.sh -y --profile minimal --default-toolchain stable
             export PATH="/usr/local/cargo/bin:$PATH"
@@ -235,8 +235,8 @@ jobs:
             rustc --version
             echo "~~~~ node -v ~~~~"
             node -v
-            echo "~~~~ yarn --version ~~~~"
-            yarn --version
+            echo "~~~~ pnpm --version ~~~~"
+            pnpm --version
           run: |
             export PATH="/usr/local/cargo/bin:$PATH"
             pwd
@@ -244,9 +244,9 @@ jobs:
             whoami
             env
             freebsd-version
-            yarn install --ignore-scripts --registry https://registry.npmjs.org --network-timeout 300000
-            yarn workspaces run build --cargo-flags="--no-default-features"
-            yarn workspaces run test
+            pnpm install --frozen-lockfile --ignore-scripts
+            pnpm -r build --cargo-flags="--no-default-features"
+            pnpm -r test
             rm -rf node_modules
             rm -rf target
       - name: Upload artifact
@@ -284,7 +284,7 @@ jobs:
           path: node_modules
           key: npm-cache-test-${{ matrix.settings.target }}-${{ matrix.node }}
       - name: Install dependencies
-        run: yarn install --ignore-scripts --registry https://registry.npmjs.org --network-timeout 300000
+        run: pnpm install --frozen-lockfile --ignore-scripts
       - name: Download artifacts
         uses: actions/download-artifact@v3
         with:
@@ -294,9 +294,9 @@ jobs:
         run: ls -R .
         shell: bash
       - name: Build TypeScript
-        run: yarn workspaces run build:ts
+        run: pnpm -r build:ts
       - name: Test bindings
-        run: yarn workspaces run test
+        run: pnpm -r test
   test-linux-x64-gnu-binding:
     name: Test bindings on Linux-x64-gnu - node@${{ matrix.node }}
     needs:
@@ -322,7 +322,7 @@ jobs:
           path: node_modules
           key: npm-cache-test-linux-x64-gnu-${{ matrix.node }}
       - name: Install dependencies
-        run: yarn install --ignore-scripts --registry https://registry.npmjs.org --network-timeout 300000
+        run: pnpm install --frozen-lockfile --ignore-scripts
       - name: Download artifacts
         uses: actions/download-artifact@v3
         with:
@@ -332,9 +332,9 @@ jobs:
         run: ls -R .
         shell: bash
       - name: Build TypeScript
-        run: yarn workspaces run build:ts
+        run: pnpm -r build:ts
       - name: Test bindings
-        run: docker run --rm -v $(pwd):/swc -w /swc node:${{ matrix.node }}-slim yarn workspaces run test
+        run: docker run --rm -v $(pwd):/swc -w /swc node:${{ matrix.node }}-slim pnpm -r test
   test-linux-x64-musl-binding:
     name: Test bindings on x86_64-unknown-linux-musl - node@${{ matrix.node }}
     needs:
@@ -360,7 +360,7 @@ jobs:
           path: node_modules
           key: npm-cache-test-x86_64-unknown-linux-musl-${{ matrix.node }}
       - name: Install dependencies
-        run: yarn install --ignore-scripts --registry https://registry.npmjs.org --network-timeout 300000
+        run: pnpm install --frozen-lockfile --ignore-scripts
       - name: Download artifacts
         uses: actions/download-artifact@v3
         with:
@@ -370,9 +370,9 @@ jobs:
         run: ls -R .
         shell: bash
       - name: Build TypeScript
-        run: yarn workspaces run build:ts
+        run: pnpm -r build:ts
       - name: Test bindings
-        run: docker run --rm -v $(pwd):/swc -w /swc node:${{ matrix.node }}-alpine yarn workspaces run test
+        run: docker run --rm -v $(pwd):/swc -w /swc node:${{ matrix.node }}-alpine pnpm -r test
   test-linux-aarch64-gnu-binding:
     name: Test bindings on aarch64-unknown-linux-gnu - node@${{ matrix.node }}
     needs:
@@ -402,9 +402,9 @@ jobs:
           path: node_modules
           key: npm-cache-test-linux-aarch64-gnu-${{ matrix.node }}
       - name: Install dependencies
-        run: yarn install --ignore-scripts --ignore-platform --registry https://registry.npmjs.org --network-timeout 300000
+        run: pnpm install --frozen-lockfile --ignore-scripts
       - name: Build TypeScript
-        run: yarn workspaces run build:ts
+        run: pnpm -r build:ts
       - name: Setup and run tests
         uses: addnab/docker-run-action@v3
         with:
@@ -412,7 +412,7 @@ jobs:
           options: "-v ${{ github.workspace }}:/build -w /build"
           run: |
             set -e
-            yarn workspaces run test
+            pnpm -r test
             ls -la
   test-linux-aarch64-musl-binding:
     name: Test bindings on aarch64-unknown-linux-musl - node@${{ matrix.node }}
@@ -436,9 +436,9 @@ jobs:
           path: node_modules
           key: npm-cache-test-linux-aarch64-musl-${{ matrix.node }}
       - name: Install dependencies
-        run: yarn install --ignore-scripts --ignore-platform --registry https://registry.npmjs.org --network-timeout 300000
+        run: pnpm install --frozen-lockfile --ignore-scripts
       - name: Build TypeScript
-        run: yarn workspaces run build:ts
+        run: pnpm -r build:ts
       - name: Setup and run tests
         uses: addnab/docker-run-action@v3
         with:
@@ -446,8 +446,8 @@ jobs:
           options: "-v ${{ github.workspace }}:/build -w /build"
           run: |
             set -e
-            apk add nodejs npm yarn
-            yarn workspaces run test
+            apk add nodejs npm pnpm
+            pnpm -r test
   test-linux-arm-gnueabihf-binding:
     name: Test bindings on armv7-unknown-linux-gnueabihf - node@${{ matrix.node }}
     needs:
@@ -477,9 +477,9 @@ jobs:
           path: node_modules
           key: npm-cache-test-linux-arm-gnueabihf-${{ matrix.node }}
       - name: Install dependencies
-        run: yarn install --ignore-scripts --ignore-platform --registry https://registry.npmjs.org --network-timeout 300000
+        run: pnpm install --frozen-lockfile --ignore-scripts
       - name: Build TypeScript
-        run: yarn workspaces run build:ts
+        run: pnpm -r build:ts
       - name: Setup and run tests
         uses: addnab/docker-run-action@v3
         with:
@@ -487,7 +487,7 @@ jobs:
           options: "-v ${{ github.workspace }}:/build -w /build"
           run: |
             set -e
-            yarn workspaces run test
+            pnpm -r test
             ls -la
   publish:
     if: ${{ startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/ci' }}
@@ -520,10 +520,10 @@ jobs:
           key: npm-cache-publish
 
       - name: Install dependencies
-        run: yarn install --ignore-scripts --registry https://registry.npmjs.org --network-timeout 300000
+        run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Build typescript files
-        run: yarn workspaces run build:ts
+        run: pnpm -r build:ts
 
       - name: Download all artifacts
         uses: actions/download-artifact@v3
@@ -544,7 +544,7 @@ jobs:
       - name: Move binaries
         shell: bash
         run: |
-          yarn workspaces run artifacts
+          pnpm -r artifacts
       - name: List npm
         run: ls -R ./packages/*/scripts/npm
         shell: bash

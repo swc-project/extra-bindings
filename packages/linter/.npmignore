@@ -10,6 +10,7 @@ pkg/
 
 yarn.lock
 package-lock.json
+pnpm-lock.yaml
 *.log
 .idea/
 docs/

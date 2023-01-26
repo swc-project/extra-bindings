@@ -6,9 +6,6 @@
   "author": "Donny/강동윤 <kdy1997.dev@gmail.com>",
   "license": "Apache-2.0",
   "private": true,
-  "workspaces": [
-    "packages/*"
-  ],
   "lint-staged": {
     "*.toml": [
       "taplo format"
