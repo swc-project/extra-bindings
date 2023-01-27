@@ -50,7 +50,7 @@ jobs:
             build: >-
               set -e &&
               export CARGO_PROFILE_RELEASE_LTO=false &&
-              RUSTFLAGS='-C target-feature=-crt-static' pnpm -r run build &&
+              RUSTFLAGS='-C target-feature=-crt-static' pnpm -r build &&
               llvm-strip -x packages/*/*.node
           - host: macos-latest
             target: aarch64-apple-darwin
