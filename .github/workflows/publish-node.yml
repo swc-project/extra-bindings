@@ -173,6 +173,7 @@ jobs:
         shell: bash
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
+        if: ${{ !matrix.settings.docker }}
       - name: Build in docker
         uses: addnab/docker-run-action@v3
         if: ${{ matrix.settings.docker }}
