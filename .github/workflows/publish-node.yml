@@ -41,7 +41,7 @@ jobs:
             docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian
             build: >-
               set -e &&
-              unset CC_x86_64_unknown_linux_gnu && unset CC && pnpm i --frozen-lockfile && 
+              unset CC_x86_64_unknown_linux_gnu && unset CC && pnpm i --frozen-lockfile --ignore-scripts &&
               pnpm -r build --target x86_64-unknown-linux-gnu && strip packages/*/*.node
           - host: ubuntu-latest
             target: x86_64-unknown-linux-musl
@@ -49,7 +49,7 @@ jobs:
             docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-alpine
             build: >-
               set -e &&
-              export CARGO_PROFILE_RELEASE_LTO=false && && pnpm i --frozen-lockfile &&
+              export CARGO_PROFILE_RELEASE_LTO=false && pnpm i --frozen-lockfile --ignore-scripts &&
               RUSTFLAGS='-C target-feature=-crt-static' && pnpm -r build &&
               llvm-strip -x packages/*/*.node
           - host: macos-latest
