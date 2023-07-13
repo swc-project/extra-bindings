@@ -238,7 +238,7 @@ fn create_element(context_element: Element) -> anyhow::Result<swc_html_ast::Elem
 
     for attribute in context_element.attributes.into_iter() {
         let namespace = match attribute.namespace {
-            Some(namespace) => Some(create_namespace(&*namespace)?),
+            Some(namespace) => Some(create_namespace(&namespace)?),
             _ => None,
         };
 
@@ -256,7 +256,7 @@ fn create_element(context_element: Element) -> anyhow::Result<swc_html_ast::Elem
     Ok(swc_html_ast::Element {
         span: DUMMY_SP,
         tag_name: context_element.tag_name.into(),
-        namespace: create_namespace(&*context_element.namespace)?,
+        namespace: create_namespace(&context_element.namespace)?,
         attributes,
         children: vec![],
         content: None,
