@@ -278,7 +278,12 @@ fn transform_inner(code: &str, opts: TransformOptions) -> anyhow::Result<Transfo
                         BasicCssWriterConfig::default()
                     },
                 );
-                let mut gen = CodeGenerator::new(&mut wr, CodegenConfig { minify: true });
+                let mut gen = CodeGenerator::new(
+                    &mut wr,
+                    CodegenConfig {
+                        minify: opts.minify,
+                    },
+                );
 
                 gen.emit(&ss).context("failed to emit")?;
             }
