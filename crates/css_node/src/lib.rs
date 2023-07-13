@@ -13,6 +13,11 @@ use swc_css_codegen::{
     writer::basic::{BasicCssWriter, BasicCssWriterConfig, IndentType, LineFeed},
     CodeGenerator, CodegenConfig, Emit,
 };
+use swc_css_compat::{
+    compiler::{Compiler, Config},
+    feature::Features,
+};
+use swc_css_visit::VisitMutWith;
 use swc_nodejs_common::{deserialize_json, get_deserialized, MapErr};
 
 use crate::util::try_with;
@@ -110,6 +115,7 @@ fn minify_inner(code: &str, opts: MinifyOptions) -> anyhow::Result<TransformOutp
                 allow_wrong_line_comments: false,
                 css_modules: false,
                 legacy_nesting: false,
+                legacy_ie: false,
             },
             &mut errors,
         );
@@ -208,6 +214,7 @@ fn transform_inner(code: &str, opts: TransformOptions) -> anyhow::Result<Transfo
                 allow_wrong_line_comments: false,
                 css_modules: opts.css_modules,
                 legacy_nesting: false,
+                legacy_ie: false,
             },
             &mut errors,
         );
@@ -247,7 +254,7 @@ fn transform_inner(code: &str, opts: TransformOptions) -> anyhow::Result<Transfo
 
         swc_css_modules::compile(&mut ss, TestConfig {});
         ss.visit_mut_with(&mut Compiler::new(Config {
-            process: Features::NESTING,
+            process: Features::all(),
         }));
 
         let mut src_map = vec![];
