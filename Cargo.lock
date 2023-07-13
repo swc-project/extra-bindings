@@ -1766,6 +1766,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "da428a7402a0cca9f954f92458d604b57ccd3a677e613980e577128ec8e6a3a5"
 dependencies = [
  "is-macro",
+ "serde",
  "string_enum",
  "swc_atoms",
  "swc_common",
