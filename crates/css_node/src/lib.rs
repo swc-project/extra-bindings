@@ -254,6 +254,7 @@ fn transform_inner(code: &str, opts: TransformOptions) -> anyhow::Result<Transfo
 
         swc_css_modules::compile(&mut ss, TestConfig {});
         ss.visit_mut_with(&mut Compiler::new(Config {
+            // TODO: preset-env
             process: Features::all(),
         }));
 
