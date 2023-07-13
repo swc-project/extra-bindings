@@ -2,7 +2,10 @@
     "words": [
         "bindgen",
         "codegen",
+        "iframe",
         "minifier",
-        "napi"
+        "napi",
+        "srcdoc",
+        "Whitespaces"
     ]
 }
