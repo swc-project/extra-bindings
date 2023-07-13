@@ -38,6 +38,7 @@ swc_css_compat = "0.23.20"
 swc_css_minifier = "0.112.20"
 swc_css_modules = "0.25.22"
 swc_css_parser = "0.146.20"
+swc_css_visit = "0.136.17"
 swc_error_reporters = "0.15.17"
 swc_nodejs_common = "0.0.8"
 tracing = { version = "0.1.37", features = ["release_max_level_info"] }
