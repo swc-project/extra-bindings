@@ -3,9 +3,11 @@
         "bindgen",
         "codegen",
         "iframe",
+        "MATHML",
         "minifier",
         "napi",
         "srcdoc",
-        "Whitespaces"
+        "Whitespaces",
+        "XLINK"
     ]
 }
