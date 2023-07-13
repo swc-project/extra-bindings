@@ -229,7 +229,9 @@ dependencies = [
  "swc_common",
  "swc_css_ast",
  "swc_css_codegen",
+ "swc_css_compat",
  "swc_css_minifier",
+ "swc_css_modules",
  "swc_css_parser",
  "swc_error_reporters",
  "swc_nodejs_common",
@@ -1383,6 +1385,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "swc_css_compat"
+version = "0.23.20"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b726d00ffb8087868cf0838d77d9b0ee464bb66620f454fbe99b004b80664785"
+dependencies = [
+ "bitflags 2.3.3",
+ "once_cell",
+ "serde",
+ "serde_json",
+ "swc_atoms",
+ "swc_common",
+ "swc_css_ast",
+ "swc_css_utils",
+ "swc_css_visit",
+]
+
+[[package]]
 name = "swc_css_minifier"
 version = "0.112.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1393,6 +1412,22 @@ dependencies = [
  "swc_common",
  "swc_css_ast",
  "swc_css_utils",
+ "swc_css_visit",
+]
+
+[[package]]
+name = "swc_css_modules"
+version = "0.25.22"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1794ac13a81298794c4976561850dfd29a3569fcb06247694bec0ae2e664e7de"
+dependencies = [
+ "rustc-hash",
+ "serde",
+ "swc_atoms",
+ "swc_common",
+ "swc_css_ast",
+ "swc_css_codegen",
+ "swc_css_parser",
  "swc_css_visit",
 ]
 
