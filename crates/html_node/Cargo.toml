@@ -33,7 +33,7 @@ swc_cached = "0.3.17"
 swc_common = { version = "0.31.17", features = ["diagnostic-serde"] }
 swc_error_reporters = "0.15.17"
 swc_html = { version = "0.127.12", features = ["minifier"] }
-swc_html_ast = "0.31.17"
+swc_html_ast = { version = "0.31.17", features = ["serde"] }
 swc_html_minifier = "0.124.12"
 swc_nodejs_common = "0.0.8"
 tracing = { version = "0.1.37", features = ["release_max_level_info"] }
