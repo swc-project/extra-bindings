@@ -233,6 +233,7 @@ dependencies = [
  "swc_css_minifier",
  "swc_css_modules",
  "swc_css_parser",
+ "swc_css_visit",
  "swc_error_reporters",
  "swc_nodejs_common",
  "tracing",
