@@ -32,6 +32,7 @@ swc_common = { version = "0.31.17", features = [
   "sourcemap",
   "diagnostic-serde",
 ] }
+swc_atoms = "0.5.7"
 swc_css_ast = "0.137.17"
 swc_css_codegen = "0.147.20"
 swc_css_compat = "0.23.20"
