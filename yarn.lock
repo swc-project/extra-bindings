@@ -1171,6 +1171,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@swc/linter@workspace:packages/linter":
+  version: 0.0.0-use.local
+  resolution: "@swc/linter@workspace:packages/linter"
+  languageName: unknown
+  linkType: soft
+
 "@taplo/cli@npm:^0.3.2":
   version: 0.3.2
   resolution: "@taplo/cli@npm:0.3.2"
@@ -5084,7 +5090,7 @@ __metadata:
 
 "typescript@patch:typescript@^4.5.2#~builtin<compat/typescript>":
   version: 4.7.4
-  resolution: "typescript@patch:typescript@npm%3A4.7.4#~builtin<compat/typescript>::version=4.7.4&hash=f456af"
+  resolution: "typescript@patch:typescript@npm%3A4.7.4#~builtin<compat/typescript>::version=4.7.4&hash=a1c5e5"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
