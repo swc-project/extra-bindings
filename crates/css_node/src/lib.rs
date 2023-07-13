@@ -60,6 +60,22 @@ pub struct MinifyOptions {
     source_map: bool,
 }
 
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TransformOptions {
+    #[serde(default)]
+    filename: Option<String>,
+
+    #[serde(default)]
+    source_map: bool,
+
+    #[serde(default)]
+    css_modules: bool,
+
+    #[serde(default)]
+    minify: bool,
+}
+
 #[napi]
 impl Task for MinifyTask {
     type JsValue = TransformOutput;
@@ -176,6 +192,111 @@ fn minify_inner(code: &str, opts: MinifyOptions) -> anyhow::Result<TransformOutp
     })
 }
 
+fn transform_inner(code: &str, opts: TransformOptions) -> anyhow::Result<TransformOutput> {
+    try_with(|cm, handler| {
+        let filename = match opts.filename {
+            Some(v) => FileName::Real(v.into()),
+            None => FileName::Anon,
+        };
+
+        let fm = cm.new_source_file(filename, code.into());
+
+        let mut errors = vec![];
+        let ss = swc_css_parser::parse_file::<swc_css_ast::Stylesheet>(
+            &fm,
+            swc_css_parser::parser::ParserConfig {
+                allow_wrong_line_comments: false,
+                css_modules: opts.css_modules,
+                legacy_nesting: false,
+            },
+            &mut errors,
+        );
+
+        let mut ss = match ss {
+            Ok(v) => v,
+            Err(err) => {
+                err.to_diagnostics(handler).emit();
+
+                for err in errors {
+                    err.to_diagnostics(handler).emit();
+                }
+
+                bail!("failed to parse input as stylesheet")
+            }
+        };
+
+        let mut returned_errors = None;
+
+        if !errors.is_empty() {
+            returned_errors = Some(Vec::with_capacity(errors.len()));
+
+            for err in errors {
+                let mut buf = vec![];
+
+                err.to_diagnostics(handler).buffer(&mut buf);
+
+                for i in buf {
+                    returned_errors.as_mut().unwrap().push(Diagnostic {
+                        level: i.level.to_string(),
+                        message: i.message(),
+                        span: serde_json::to_value(&i.span)?,
+                    });
+                }
+            }
+        }
+
+        swc_css_modules::compile(&mut ss, TestConfig {});
+        ss.visit_mut_with(&mut Compiler::new(Config {
+            process: Features::NESTING,
+        }));
+
+        let mut src_map = vec![];
+        let code = {
+            let mut buf = String::new();
+            {
+                let mut wr = BasicCssWriter::new(
+                    &mut buf,
+                    if opts.source_map {
+                        Some(&mut src_map)
+                    } else {
+                        None
+                    },
+                    if opts.minify {
+                        BasicCssWriterConfig {
+                            indent_type: IndentType::Space,
+                            indent_width: 0,
+                            linefeed: LineFeed::LF,
+                        }
+                    } else {
+                        BasicCssWriterConfig::default()
+                    },
+                );
+                let mut gen = CodeGenerator::new(&mut wr, CodegenConfig { minify: true });
+
+                gen.emit(&ss).context("failed to emit")?;
+            }
+
+            buf
+        };
+
+        let map = if opts.source_map {
+            let map = cm.build_source_map(&mut src_map);
+            let mut buf = vec![];
+            map.to_writer(&mut buf)
+                .context("failed to generate sourcemap")?;
+            Some(String::from_utf8(buf).context("the generated source map is not utf8")?)
+        } else {
+            None
+        };
+
+        Ok(TransformOutput {
+            code,
+            map,
+            errors: returned_errors,
+        })
+    })
+}
+
 #[allow(unused)]
 #[napi]
 fn minify(code: Buffer, opts: Buffer, signal: Option<AbortSignal>) -> AsyncTask<MinifyTask> {
@@ -196,4 +317,26 @@ pub fn minify_sync(code: Buffer, opts: Buffer) -> napi::Result<TransformOutput> 
     let opts = get_deserialized(opts)?;
 
     minify_inner(&code, opts).convert_err()
+}
+
+#[allow(unused)]
+#[napi]
+fn transform(code: Buffer, opts: Buffer, signal: Option<AbortSignal>) -> AsyncTask<MinifyTask> {
+    swc_nodejs_common::init_default_trace_subscriber();
+    let code = String::from_utf8_lossy(code.as_ref()).to_string();
+    let options = String::from_utf8_lossy(opts.as_ref()).to_string();
+
+    let task = MinifyTask { code, options };
+
+    AsyncTask::with_optional_signal(task, signal)
+}
+
+#[allow(unused)]
+#[napi]
+pub fn transform_sync(code: Buffer, opts: Buffer) -> napi::Result<TransformOutput> {
+    swc_nodejs_common::init_default_trace_subscriber();
+    let code = String::from_utf8_lossy(code.as_ref()).to_string();
+    let opts = get_deserialized(opts)?;
+
+    transform_inner(&code, opts).convert_err()
 }
