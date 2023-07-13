@@ -307,7 +307,6 @@ fn transform_inner(code: &str, opts: TransformOptions) -> anyhow::Result<Transfo
 #[allow(unused)]
 #[napi]
 fn minify(code: Buffer, opts: Buffer, signal: Option<AbortSignal>) -> AsyncTask<MinifyTask> {
-    swc_nodejs_common::init_default_trace_subscriber();
     let code = String::from_utf8_lossy(code.as_ref()).to_string();
     let options = String::from_utf8_lossy(opts.as_ref()).to_string();
 
@@ -319,7 +318,6 @@ fn minify(code: Buffer, opts: Buffer, signal: Option<AbortSignal>) -> AsyncTask<
 #[allow(unused)]
 #[napi]
 pub fn minify_sync(code: Buffer, opts: Buffer) -> napi::Result<TransformOutput> {
-    swc_nodejs_common::init_default_trace_subscriber();
     let code = String::from_utf8_lossy(code.as_ref()).to_string();
     let opts = get_deserialized(opts)?;
 
@@ -329,7 +327,6 @@ pub fn minify_sync(code: Buffer, opts: Buffer) -> napi::Result<TransformOutput> 
 #[allow(unused)]
 #[napi]
 fn transform(code: Buffer, opts: Buffer, signal: Option<AbortSignal>) -> AsyncTask<MinifyTask> {
-    swc_nodejs_common::init_default_trace_subscriber();
     let code = String::from_utf8_lossy(code.as_ref()).to_string();
     let options = String::from_utf8_lossy(opts.as_ref()).to_string();
 
@@ -341,7 +338,6 @@ fn transform(code: Buffer, opts: Buffer, signal: Option<AbortSignal>) -> AsyncTa
 #[allow(unused)]
 #[napi]
 pub fn transform_sync(code: Buffer, opts: Buffer) -> napi::Result<TransformOutput> {
-    swc_nodejs_common::init_default_trace_subscriber();
     let code = String::from_utf8_lossy(code.as_ref()).to_string();
     let opts = get_deserialized(opts)?;
 
