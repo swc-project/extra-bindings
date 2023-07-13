@@ -324,7 +324,7 @@ fn minify(code: Buffer, opts: Buffer, signal: Option<AbortSignal>) -> AsyncTask<
 #[allow(unused)]
 #[napi]
 pub fn minify_sync(code: Buffer, opts: Buffer) -> napi::Result<TransformOutput> {
-    let code = String::from_utf8_lossy(code.as_ref()).to_string();
+    let code = String::from_utf8_lossy(code.as_ref());
     let opts = get_deserialized(opts)?;
 
     minify_inner(&code, opts).convert_err()
@@ -344,7 +344,7 @@ fn transform(code: Buffer, opts: Buffer, signal: Option<AbortSignal>) -> AsyncTa
 #[allow(unused)]
 #[napi]
 pub fn transform_sync(code: Buffer, opts: Buffer) -> napi::Result<TransformOutput> {
-    let code = String::from_utf8_lossy(code.as_ref()).to_string();
+    let code = String::from_utf8_lossy(code.as_ref());
     let opts = get_deserialized(opts)?;
 
     transform_inner(&code, opts).convert_err()

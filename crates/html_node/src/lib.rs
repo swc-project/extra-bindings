@@ -492,7 +492,7 @@ fn minify_fragment(
 #[allow(unused)]
 #[napi]
 pub fn minify_sync(code: Buffer, opts: Buffer) -> napi::Result<TransformOutput> {
-    let code = String::from_utf8_lossy(code.as_ref()).to_string();
+    let code = String::from_utf8_lossy(code.as_ref());
     let options = get_deserialized(opts)?;
 
     minify_inner(&code, options, false).convert_err()
@@ -501,7 +501,7 @@ pub fn minify_sync(code: Buffer, opts: Buffer) -> napi::Result<TransformOutput> 
 #[allow(unused)]
 #[napi]
 pub fn minify_fragment_sync(code: Buffer, opts: Buffer) -> napi::Result<TransformOutput> {
-    let code = String::from_utf8_lossy(code.as_ref()).to_string();
+    let code = String::from_utf8_lossy(code.as_ref());
     let options = get_deserialized(opts)?;
 
     minify_inner(&code, options, true).convert_err()

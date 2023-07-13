@@ -155,7 +155,7 @@ fn lint(code: Buffer, opts: Buffer, signal: Option<AbortSignal>) -> AsyncTask<Li
 #[allow(unused)]
 #[napi]
 pub fn lint_sync(code: Buffer, opts: Buffer) -> napi::Result<TransformOutput> {
-    let code = String::from_utf8_lossy(code.as_ref()).to_string();
+    let code = String::from_utf8_lossy(code.as_ref());
     let opts = get_deserialized(opts)?;
 
     lint_inner(&code, opts).convert_err()
