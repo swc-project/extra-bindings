@@ -1,13 +1,12 @@
 #[macro_use]
 extern crate napi_derive;
 
-mod util;
-
 use std::{backtrace::Backtrace, env, panic::set_hook};
 
 use anyhow::{bail, Context};
 use napi::{bindgen_prelude::*, Task};
 use serde::{Deserialize, Serialize};
+use swc_atoms::JsWord;
 use swc_common::FileName;
 use swc_css_codegen::{
     writer::basic::{BasicCssWriter, BasicCssWriterConfig, IndentType, LineFeed},
@@ -21,6 +20,8 @@ use swc_css_visit::VisitMutWith;
 use swc_nodejs_common::{deserialize_json, get_deserialized, MapErr};
 
 use crate::util::try_with;
+
+mod util;
 
 #[napi::module_init]
 fn init() {
@@ -75,10 +76,18 @@ pub struct TransformOptions {
     source_map: bool,
 
     #[serde(default)]
-    css_modules: bool,
+    css_modules: Option<CssModulesConfig>,
 
     #[serde(default)]
     minify: bool,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CssModulesConfig {}
+
+impl swc_css_modules::TransformConfig for CssModulesConfig {
+    fn new_name_for(&self, local: &JsWord) -> JsWord {}
 }
 
 #[napi]
@@ -212,7 +221,7 @@ fn transform_inner(code: &str, opts: TransformOptions) -> anyhow::Result<Transfo
             &fm,
             swc_css_parser::parser::ParserConfig {
                 allow_wrong_line_comments: false,
-                css_modules: opts.css_modules,
+                css_modules: opts.css_modules.is_some(),
                 legacy_nesting: false,
                 legacy_ie: false,
             },
@@ -252,7 +261,10 @@ fn transform_inner(code: &str, opts: TransformOptions) -> anyhow::Result<Transfo
             }
         }
 
-        swc_css_modules::compile(&mut ss, TestConfig {});
+        if let Some(config) = opts.css_modules {
+            swc_css_modules::compile(&mut ss, config);
+        }
+
         ss.visit_mut_with(&mut Compiler::new(Config {
             // TODO: preset-env
             process: Features::all(),
