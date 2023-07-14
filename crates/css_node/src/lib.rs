@@ -90,6 +90,7 @@ pub struct CssModulesConfig {
 
 #[derive(Debug)]
 struct CssModuleTransformConfig {
+    file_name_hash: u128,
     pattern: Vec<CssClassNameSegment>,
 }
 
@@ -110,7 +111,7 @@ impl swc_css_modules::TransformConfig for CssModuleTransformConfig {
 }
 
 impl CssModulesConfig {
-    fn parse_pattern(&self) -> Vec<CssClassNameSegment> {}
+    fn parse_pattern(&self) -> anyhow::Result<Vec<CssClassNameSegment>> {}
 }
 
 #[napi]
