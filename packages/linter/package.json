@@ -1,5 +1,6 @@
 {
   "name": "@swc/linter",
+  "packageManager": "yarn@3.2.3",
   "version": "0.0.20",
   "description": "Super-fast linter based on SWC",
   "homepage": "https://swc.rs",

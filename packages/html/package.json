@@ -1,5 +1,6 @@
 {
   "name": "@swc/html",
+  "packageManager": "yarn@3.2.3",
   "version": "0.0.20",
   "description": "Super-fast alternative for posthtml",
   "homepage": "https://swc.rs",
