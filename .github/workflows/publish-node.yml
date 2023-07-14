@@ -71,7 +71,7 @@ jobs:
               export CC_aarch64_unknown_linux_gnu=/usr/aarch64-unknown-linux-gnu/bin/aarch64-unknown-linux-gnu-gcc &&
               yarn workspaces run build --target aarch64-unknown-linux-gnu &&
               llvm-strip -x packages/*/*.node
-          - host: ubuntu-18.04
+          - host: ubuntu-latest
             target: armv7-unknown-linux-gnueabihf
             setup: |
               sudo apt-get update
@@ -196,7 +196,7 @@ jobs:
             packages/*/*.node
           if-no-files-found: error
   build-freebsd:
-    runs-on: macos-10.15
+    runs-on: macos-latest
     name: Build FreeBSD
     steps:
       - uses: actions/checkout@v3

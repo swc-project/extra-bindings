@@ -238,7 +238,7 @@ fn create_element(context_element: Element) -> anyhow::Result<swc_html_ast::Elem
 
     for attribute in context_element.attributes.into_iter() {
         let namespace = match attribute.namespace {
-            Some(namespace) => Some(create_namespace(&*namespace)?),
+            Some(namespace) => Some(create_namespace(&namespace)?),
             _ => None,
         };
 
@@ -256,7 +256,7 @@ fn create_element(context_element: Element) -> anyhow::Result<swc_html_ast::Elem
     Ok(swc_html_ast::Element {
         span: DUMMY_SP,
         tag_name: context_element.tag_name.into(),
-        namespace: create_namespace(&*context_element.namespace)?,
+        namespace: create_namespace(&context_element.namespace)?,
         attributes,
         children: vec![],
         content: None,
@@ -458,7 +458,6 @@ fn minify_inner(
 #[allow(unused)]
 #[napi]
 fn minify(code: Buffer, opts: Buffer, signal: Option<AbortSignal>) -> AsyncTask<MinifyTask> {
-    swc_nodejs_common::init_default_trace_subscriber();
     let code = String::from_utf8_lossy(code.as_ref()).to_string();
     let options = String::from_utf8_lossy(opts.as_ref()).to_string();
 
@@ -478,7 +477,6 @@ fn minify_fragment(
     opts: Buffer,
     signal: Option<AbortSignal>,
 ) -> AsyncTask<MinifyTask> {
-    swc_nodejs_common::init_default_trace_subscriber();
     let code = String::from_utf8_lossy(code.as_ref()).to_string();
     let options = String::from_utf8_lossy(opts.as_ref()).to_string();
 
@@ -494,8 +492,7 @@ fn minify_fragment(
 #[allow(unused)]
 #[napi]
 pub fn minify_sync(code: Buffer, opts: Buffer) -> napi::Result<TransformOutput> {
-    swc_nodejs_common::init_default_trace_subscriber();
-    let code = String::from_utf8_lossy(code.as_ref()).to_string();
+    let code = String::from_utf8_lossy(code.as_ref());
     let options = get_deserialized(opts)?;
 
     minify_inner(&code, options, false).convert_err()
@@ -504,8 +501,7 @@ pub fn minify_sync(code: Buffer, opts: Buffer) -> napi::Result<TransformOutput> 
 #[allow(unused)]
 #[napi]
 pub fn minify_fragment_sync(code: Buffer, opts: Buffer) -> napi::Result<TransformOutput> {
-    swc_nodejs_common::init_default_trace_subscriber();
-    let code = String::from_utf8_lossy(code.as_ref()).to_string();
+    let code = String::from_utf8_lossy(code.as_ref());
     let options = get_deserialized(opts)?;
 
     minify_inner(&code, options, true).convert_err()
