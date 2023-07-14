@@ -3,6 +3,7 @@
         "bindgen",
         "codegen",
         "iframe",
+        "lightningcss",
         "MATHML",
         "minifier",
         "napi",
