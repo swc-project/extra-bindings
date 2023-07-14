@@ -1172,6 +1172,7 @@ __metadata:
   resolution: "@swc/html@workspace:packages/html"
   dependencies:
     "@napi-rs/cli": ^2.16.1
+    typescript: ^5.1.6
   languageName: unknown
   linkType: soft
 
@@ -1180,6 +1181,7 @@ __metadata:
   resolution: "@swc/linter@workspace:packages/linter"
   dependencies:
     "@napi-rs/cli": ^2.16.1
+    typescript: ^5.1.6
   languageName: unknown
   linkType: soft
 
