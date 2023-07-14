@@ -111,7 +111,50 @@ impl swc_css_modules::TransformConfig for CssModuleTransformConfig {
 }
 
 impl CssModulesConfig {
-    fn parse_pattern(&self) -> anyhow::Result<Vec<CssClassNameSegment>> {}
+    /// Adapted from lightningcss
+    fn parse_pattern(&self) -> anyhow::Result<Vec<CssClassNameSegment>> {
+        let mut res = Vec::with_capacity(2);
+
+        let mut idx = 0;
+
+        let mut s = &*self.pattern;
+
+        while !s.is_empty() {
+            if s.starts_with('[') {
+                if let Some(end_idx) = s.find(']') {
+                    let segment = match &s[0..=end_idx] {
+                        "[name]" => CssClassNameSegment::Name,
+                        "[local]" => CssClassNameSegment::Local,
+                        "[hash]" => CssClassNameSegment::Hash,
+                        s => {
+                            bail!(
+                                "Unknown placeholder {} at {} in CSS Modules pattern: {}",
+                                s,
+                                idx,
+                                self.pattern
+                            )
+                        }
+                    };
+                    res.push(segment);
+                    idx += end_idx + 1;
+                    s = &s[end_idx + 1..];
+                } else {
+                    bail!(
+                        "Unclosed brackets at {} in CSS Modules pattern: {}",
+                        idx,
+                        self.pattern
+                    )
+                }
+            } else {
+                let end_idx = s.find('[').unwrap_or_else(|| s.len());
+                res.push(CssClassNameSegment::Literal(s[0..end_idx].into()));
+                idx += end_idx;
+                s = &s[end_idx..];
+            }
+        }
+
+        Ok(res)
+    }
 }
 
 #[napi]
