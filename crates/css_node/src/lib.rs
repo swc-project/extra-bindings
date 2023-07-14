@@ -95,9 +95,13 @@ struct CssModuleTransformConfig {
 
 #[derive(Debug)]
 enum CssClassNameSegment {
+    /// A literal string segment.
     Literal(JsWord),
+    /// The base file name.
     Name,
+    /// The original class name.
     Local,
+    /// A hash of the file name.
     Hash,
 }
 
