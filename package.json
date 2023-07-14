@@ -38,7 +38,6 @@
     "prepare": "husky install && git config feature.manyFiles true"
   },
   "devDependencies": {
-    "@napi-rs/cli": "^2.10.0",
     "@taplo/cli": "^0.3.2",
     "@types/jest": "^28.1.4",
     "@types/node": "^14.14.41",
