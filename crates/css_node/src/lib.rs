@@ -84,10 +84,29 @@ pub struct TransformOptions {
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct CssModulesConfig {}
+pub struct CssModulesConfig {
+    pattern: String,
+}
 
-impl swc_css_modules::TransformConfig for CssModulesConfig {
+#[derive(Debug)]
+struct CssModuleTransformConfig {
+    pattern: Vec<CssClassNameSegment>,
+}
+
+#[derive(Debug)]
+enum CssClassNameSegment {
+    Literal(JsWord),
+    Name,
+    Local,
+    Hash,
+}
+
+impl swc_css_modules::TransformConfig for CssModuleTransformConfig {
     fn new_name_for(&self, local: &JsWord) -> JsWord {}
+}
+
+impl CssModulesConfig {
+    fn parse_pattern(&self) -> Vec<CssClassNameSegment> {}
 }
 
 #[napi]
