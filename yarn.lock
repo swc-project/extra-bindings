@@ -1059,12 +1059,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@napi-rs/cli@npm:^2.10.0":
-  version: 2.10.1
-  resolution: "@napi-rs/cli@npm:2.10.1"
+"@napi-rs/cli@npm:^2.16.1":
+  version: 2.16.1
+  resolution: "@napi-rs/cli@npm:2.16.1"
   bin:
     napi: scripts/index.js
-  checksum: 2c3ee83577c45d1ba01934d5f8a7068a451877e230f6bbf5559a0c767aa4e0f626fe6511705dc9a1add43d75a8fa08e890dc620277aede27ddbbc0ba0d502b30
+  checksum: 5f61712cf1a4002b7b9b65bc4a6f2a7df68b197cfc7024c7d28820e3b12b5e9c0baa0d85f262f25dbf928586ce01c5c06837754f9f98ef4ebafa55dd027c6837
   languageName: node
   linkType: hard
 
@@ -1144,7 +1144,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@swc/bindings@workspace:."
   dependencies:
-    "@napi-rs/cli": ^2.10.0
     "@taplo/cli": ^0.3.2
     "@types/jest": ^28.1.4
     "@types/node": ^14.14.41
@@ -1159,19 +1158,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@swc/css-loader@workspace:packages/css-loader":
-  version: 0.0.0-use.local
-  resolution: "@swc/css-loader@workspace:packages/css-loader"
-  dependencies:
-    "@swc/css": "workspace:^"
-    typescript: ^5.1.6
-  languageName: unknown
-  linkType: soft
-
-"@swc/css@workspace:^, @swc/css@workspace:packages/css":
+"@swc/css@workspace:packages/css":
   version: 0.0.0-use.local
   resolution: "@swc/css@workspace:packages/css"
   dependencies:
+    "@napi-rs/cli": ^2.16.1
     typescript: ^5.1.6
   languageName: unknown
   linkType: soft
@@ -1179,12 +1170,16 @@ __metadata:
 "@swc/html@workspace:packages/html":
   version: 0.0.0-use.local
   resolution: "@swc/html@workspace:packages/html"
+  dependencies:
+    "@napi-rs/cli": ^2.16.1
   languageName: unknown
   linkType: soft
 
 "@swc/linter@workspace:packages/linter":
   version: 0.0.0-use.local
   resolution: "@swc/linter@workspace:packages/linter"
+  dependencies:
+    "@napi-rs/cli": ^2.16.1
   languageName: unknown
   linkType: soft
 
