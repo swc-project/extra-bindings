@@ -1171,6 +1171,8 @@ __metadata:
 "@swc/css@workspace:^, @swc/css@workspace:packages/css":
   version: 0.0.0-use.local
   resolution: "@swc/css@workspace:packages/css"
+  dependencies:
+    typescript: ^5.1.6
   languageName: unknown
   linkType: soft
 
