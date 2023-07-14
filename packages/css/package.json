@@ -1,5 +1,6 @@
 {
   "name": "@swc/css",
+  "packageManager": "yarn@3.2.3",
   "version": "0.0.20",
   "description": "Super-fast alternative for postcss",
   "homepage": "https://swc.rs",
@@ -26,7 +27,6 @@
       "defaults": true,
       "additional": [
         "x86_64-unknown-linux-musl",
-        "x86_64-unknown-freebsd",
         "i686-pc-windows-msvc",
         "aarch64-unknown-linux-gnu",
         "armv7-unknown-linux-gnueabihf",
@@ -52,5 +52,8 @@
     "build:dev": "tsc -d && napi build --platform --cargo-name css_node --js ./binding.js --dts binding.d.ts -p css_node --cargo-cwd ../..",
     "test": "echo 'done!'",
     "version": "napi version -p scripts/npm"
+  },
+  "devDependencies": {
+    "typescript": "^5.1.6"
   }
 }
