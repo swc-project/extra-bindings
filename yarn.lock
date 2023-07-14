@@ -1159,7 +1159,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@swc/css@workspace:packages/css":
+"@swc/css-loader@workspace:packages/css-loader":
+  version: 0.0.0-use.local
+  resolution: "@swc/css-loader@workspace:packages/css-loader"
+  dependencies:
+    "@swc/css": "workspace:^"
+  languageName: unknown
+  linkType: soft
+
+"@swc/css@workspace:^, @swc/css@workspace:packages/css":
   version: 0.0.0-use.local
   resolution: "@swc/css@workspace:packages/css"
   languageName: unknown
