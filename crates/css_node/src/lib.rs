@@ -329,7 +329,15 @@ fn transform_inner(code: &str, opts: TransformOptions) -> anyhow::Result<Transfo
         }
 
         if let Some(config) = opts.css_modules {
-            swc_css_modules::compile(&mut ss, config);
+            swc_css_modules::compile(
+                &mut ss,
+                CssModuleTransformConfig {
+                    file_name_hash: fm.name_hash,
+                    pattern: config
+                        .parse_pattern()
+                        .context("failed to parse the pattern for CSS Modules")?,
+                },
+            );
         }
 
         ss.visit_mut_with(&mut Compiler::new(Config {
