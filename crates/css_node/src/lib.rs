@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate napi_derive;
 
-use std::{backtrace::Backtrace, env, panic::set_hook};
+use std::{backtrace::Backtrace, env, fmt::Write, panic::set_hook, sync::Arc};
 
 use anyhow::{bail, Context};
 use napi::{bindgen_prelude::*, Task};
@@ -90,7 +90,8 @@ pub struct CssModulesConfig {
 
 #[derive(Debug)]
 struct CssModuleTransformConfig {
-    file_name_hash: u128,
+    file_name: Arc<FileName>,
+    file_name_hash: u8,
     pattern: Vec<CssClassNameSegment>,
 }
 
@@ -107,7 +108,30 @@ enum CssClassNameSegment {
 }
 
 impl swc_css_modules::TransformConfig for CssModuleTransformConfig {
-    fn new_name_for(&self, local: &JsWord) -> JsWord {}
+    fn new_name_for(&self, local: &JsWord) -> JsWord {
+        let mut buf = String::new();
+
+        for segment in &self.pattern {
+            match segment {
+                CssClassNameSegment::Literal(s) => buf.push_str(s),
+                CssClassNameSegment::Name => match &*self.file_name {
+                    FileName::Real(f) => {
+                        write!(buf, "{}", f.file_stem().unwrap().to_str().unwrap()).unwrap();
+                    }
+                    FileName::Anon => buf.push_str("[anon]"),
+                    _ => {
+                        unreachable!("CssModuleTransformConfig::new_name_for: invalid file name")
+                    }
+                },
+                CssClassNameSegment::Local => buf.push_str(local),
+                CssClassNameSegment::Hash => {
+                    write!(buf, "{:x}", self.file_name_hash).unwrap();
+                }
+            }
+        }
+
+        buf.into()
+    }
 }
 
 impl CssModulesConfig {
@@ -146,7 +170,7 @@ impl CssModulesConfig {
                     )
                 }
             } else {
-                let end_idx = s.find('[').unwrap_or_else(|| s.len());
+                let end_idx = s.find('[').unwrap_or(s.len());
                 res.push(CssClassNameSegment::Literal(s[0..end_idx].into()));
                 idx += end_idx;
                 s = &s[end_idx..];
@@ -257,7 +281,7 @@ fn minify_inner(code: &str, opts: MinifyOptions) -> anyhow::Result<TransformOutp
         };
 
         let map = if opts.source_map {
-            let map = cm.build_source_map(&mut src_map);
+            let map = cm.build_source_map(&src_map);
             let mut buf = vec![];
             map.to_writer(&mut buf)
                 .context("failed to generate sourcemap")?;
@@ -332,7 +356,8 @@ fn transform_inner(code: &str, opts: TransformOptions) -> anyhow::Result<Transfo
             swc_css_modules::compile(
                 &mut ss,
                 CssModuleTransformConfig {
-                    file_name_hash: fm.name_hash,
+                    file_name: Arc::new(fm.name.clone()),
+                    file_name_hash: fm.name_hash as _,
                     pattern: config
                         .parse_pattern()
                         .context("failed to parse the pattern for CSS Modules")?,
@@ -380,7 +405,7 @@ fn transform_inner(code: &str, opts: TransformOptions) -> anyhow::Result<Transfo
         };
 
         let map = if opts.source_map {
-            let map = cm.build_source_map(&mut src_map);
+            let map = cm.build_source_map(&src_map);
             let mut buf = vec![];
             map.to_writer(&mut buf)
                 .context("failed to generate sourcemap")?;
