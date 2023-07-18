@@ -13,6 +13,11 @@ export type TransformOptions = {
   cssModules?: CssModuleTransformOptions
 
   minify?: boolean
+
+  /**
+   * If true, swc will analyze dependencies of css files.
+   */
+  analyzeDependencies?: boolean
 }
 
 export type CssModuleTransformOptions = {

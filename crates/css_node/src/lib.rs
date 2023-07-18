@@ -49,6 +49,10 @@ pub struct TransformOutput {
     pub map: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub errors: Option<Vec<Diagnostic>>,
+
+    /// JSON string.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub deps: Option<String>,
 }
 
 struct MinifyTask {
@@ -80,6 +84,9 @@ pub struct TransformOptions {
 
     #[serde(default)]
     minify: bool,
+
+    #[serde(default)]
+    analyze_dependencies: bool,
 }
 
 #[derive(Debug, Deserialize)]
