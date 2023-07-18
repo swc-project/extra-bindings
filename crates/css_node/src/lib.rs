@@ -301,6 +301,7 @@ fn minify_inner(code: &str, opts: MinifyOptions) -> anyhow::Result<TransformOutp
             code,
             map,
             errors: returned_errors,
+            deps: Default::default(),
         })
     })
 }
