@@ -21,6 +21,7 @@ use swc_nodejs_common::{deserialize_json, get_deserialized, MapErr};
 
 use crate::util::try_with;
 
+mod deps;
 mod util;
 
 #[napi::module_init]
