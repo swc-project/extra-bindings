@@ -16,6 +16,12 @@ pub struct Dependencies {
 #[derive(Debug, Serialize)]
 pub struct Import {
     pub url: CssUrl,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub supports: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub layer: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub media: Option<String>,
 }
 
 #[derive(Debug, Serialize)]
