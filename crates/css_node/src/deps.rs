@@ -40,7 +40,14 @@ impl Visit for Analyzer {
     }
 }
 
-fn normalize_import_href(n: &ImportHref) -> Option<CssUrl> {}
+fn normalize_import_href(n: &ImportHref) -> Option<CssUrl> {
+    match n {
+        ImportHref::Url(n) => normalize_url(n),
+        ImportHref::Str(n) => Some(CssUrl {
+            value: n.value.clone(),
+        }),
+    }
+}
 
 fn normalize_url(n: &Url) -> Option<CssUrl> {
     let v = &*n.value?;
