@@ -16,11 +16,12 @@ use swc_css_compat::{
     compiler::{Compiler, Config},
     feature::Features,
 };
-use swc_css_visit::VisitMutWith;
+use swc_css_visit::{VisitMutWith, VisitWith};
 use swc_nodejs_common::{deserialize_json, get_deserialized, MapErr};
 
 use crate::util::try_with;
 
+mod deps;
 mod util;
 
 #[napi::module_init]
@@ -49,6 +50,10 @@ pub struct TransformOutput {
     pub map: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub errors: Option<Vec<Diagnostic>>,
+
+    /// JSON string.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub deps: Option<String>,
 }
 
 struct MinifyTask {
@@ -80,6 +85,9 @@ pub struct TransformOptions {
 
     #[serde(default)]
     minify: bool,
+
+    #[serde(default)]
+    analyze_dependencies: bool,
 }
 
 #[derive(Debug, Deserialize)]
@@ -259,7 +267,7 @@ fn minify_inner(code: &str, opts: MinifyOptions) -> anyhow::Result<TransformOutp
         let code = {
             let mut buf = String::new();
             {
-                let mut wr = BasicCssWriter::new(
+                let wr = BasicCssWriter::new(
                     &mut buf,
                     if opts.source_map {
                         Some(&mut src_map)
@@ -272,7 +280,7 @@ fn minify_inner(code: &str, opts: MinifyOptions) -> anyhow::Result<TransformOutp
                         linefeed: LineFeed::LF,
                     },
                 );
-                let mut gen = CodeGenerator::new(&mut wr, CodegenConfig { minify: true });
+                let mut gen = CodeGenerator::new(wr, CodegenConfig { minify: true });
 
                 gen.emit(&ss).context("failed to emit")?;
             }
@@ -294,6 +302,7 @@ fn minify_inner(code: &str, opts: MinifyOptions) -> anyhow::Result<TransformOutp
             code,
             map,
             errors: returned_errors,
+            deps: Default::default(),
         })
     })
 }
@@ -330,6 +339,16 @@ fn transform_inner(code: &str, opts: TransformOptions) -> anyhow::Result<Transfo
 
                 bail!("failed to parse input as stylesheet")
             }
+        };
+
+        let deps = if opts.analyze_dependencies {
+            let mut v = deps::Analyzer::default();
+
+            ss.visit_with(&mut v);
+
+            Some(v.deps)
+        } else {
+            None
         };
 
         let mut returned_errors = None;
@@ -374,7 +393,7 @@ fn transform_inner(code: &str, opts: TransformOptions) -> anyhow::Result<Transfo
         let code = {
             let mut buf = String::new();
             {
-                let mut wr = BasicCssWriter::new(
+                let wr = BasicCssWriter::new(
                     &mut buf,
                     if opts.source_map {
                         Some(&mut src_map)
@@ -392,7 +411,7 @@ fn transform_inner(code: &str, opts: TransformOptions) -> anyhow::Result<Transfo
                     },
                 );
                 let mut gen = CodeGenerator::new(
-                    &mut wr,
+                    wr,
                     CodegenConfig {
                         minify: opts.minify,
                     },
@@ -418,6 +437,7 @@ fn transform_inner(code: &str, opts: TransformOptions) -> anyhow::Result<Transfo
             code,
             map,
             errors: returned_errors,
+            deps: deps.map(|v| serde_json::to_string(&v).unwrap()),
         })
     })
 }
