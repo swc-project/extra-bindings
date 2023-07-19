@@ -1,4 +1,5 @@
 use serde::Serialize;
+use swc_atoms::JsWord;
 use swc_css_ast::{ImportHref, ImportPrelude, Url};
 use swc_css_visit::{Visit, VisitWith};
 
@@ -18,23 +19,31 @@ pub struct Import {
 }
 
 #[derive(Debug, Serialize)]
-pub struct CssUrl {}
+pub struct CssUrl {
+    pub value: JsWord,
+}
 
 impl Visit for Analyzer {
     fn visit_import_prelude(&mut self, n: &ImportPrelude) {
         n.layer_name.visit_with(self);
         n.import_conditions.visit_with(self);
 
-        self.deps.imports.push(Import {
-            url: normalize_import_href(&n.href),
-        });
+        let url = normalize_import_href(&n.href);
+
+        if let Some(url) = url {
+            self.deps.imports.push(Import { url });
+        }
     }
 
     fn visit_url(&mut self, n: &Url) {
-        self.deps.urls.push(normalize_url(n));
+        self.deps.urls.extend(normalize_url(n));
     }
 }
 
-fn normalize_import_href(n: &ImportHref) -> CssUrl {}
+fn normalize_import_href(n: &ImportHref) -> Option<CssUrl> {}
 
-fn normalize_url(n: &Url) -> CssUrl {}
+fn normalize_url(n: &Url) -> Option<CssUrl> {
+    CssUrl {
+        value: n.value.clone(),
+    }
+}
