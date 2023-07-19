@@ -1,7 +1,7 @@
 {
   "name": "@swc/css",
   "packageManager": "yarn@3.2.3",
-  "version": "0.0.25",
+  "version": "0.0.26",
   "description": "Super-fast alternative for postcss",
   "homepage": "https://swc.rs",
   "main": "./index.js",
