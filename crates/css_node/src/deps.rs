@@ -48,13 +48,13 @@ impl Visit for Analyzer {
                     .import_conditions
                     .as_deref()
                     .and_then(|n| n.supports.as_deref())
-                    .and_then(|n| {}),
-                layer: n.layer_name.as_deref().map(|n| {}),
+                    .map(print_node),
+                layer: n.layer_name.as_deref().map(print_node),
                 media: n
                     .import_conditions
                     .as_deref()
                     .and_then(|n| n.media.as_deref())
-                    .and_then(|n| n.queries.iter().map(print_node).collect()),
+                    .map(|n| n.queries.iter().map(print_node).collect()),
             });
         }
     }
@@ -84,7 +84,7 @@ fn parse_url(s: &JsWord) -> CssUrl {
     CssUrl { value: s.clone() }
 }
 
-fn print_node<N>(n: N) -> Option<String>
+fn print_node<N>(n: N) -> String
 where
     N: Spanned,
     for<'a> CodeGenerator<BasicCssWriter<'a, &'a mut String>>: Emit<N>,
@@ -101,7 +101,8 @@ where
     );
     let mut gen = CodeGenerator::new(wr, CodegenConfig { minify: true });
 
-    gen.emit(&n).ok()?;
+    gen.emit(&n)
+        .expect("failed to print node for dependency analysis");
 
-    Some(buf)
+    buf
 }
