@@ -1,6 +1,6 @@
 use serde::Serialize;
 use swc_atoms::JsWord;
-use swc_css_ast::{ImportHref, ImportPrelude, Url};
+use swc_css_ast::{ImportHref, ImportPrelude, Url, UrlValue};
 use swc_css_visit::{Visit, VisitWith};
 
 pub struct Analyzer {
@@ -43,7 +43,12 @@ impl Visit for Analyzer {
 fn normalize_import_href(n: &ImportHref) -> Option<CssUrl> {}
 
 fn normalize_url(n: &Url) -> Option<CssUrl> {
-    CssUrl {
-        value: n.value.clone(),
-    }
+    let v = &*n.value?;
+
+    Some(CssUrl {
+        value: match v {
+            UrlValue::Str(v) => v.value.clone(),
+            UrlValue::Raw(v) => v.value.clone(),
+        },
+    })
 }
