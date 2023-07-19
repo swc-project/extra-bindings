@@ -16,7 +16,7 @@ use swc_css_compat::{
     compiler::{Compiler, Config},
     feature::Features,
 };
-use swc_css_visit::VisitMutWith;
+use swc_css_visit::{VisitMutWith, VisitWith};
 use swc_nodejs_common::{deserialize_json, get_deserialized, MapErr};
 
 use crate::util::try_with;
@@ -267,7 +267,7 @@ fn minify_inner(code: &str, opts: MinifyOptions) -> anyhow::Result<TransformOutp
         let code = {
             let mut buf = String::new();
             {
-                let mut wr = BasicCssWriter::new(
+                let wr = BasicCssWriter::new(
                     &mut buf,
                     if opts.source_map {
                         Some(&mut src_map)
@@ -341,6 +341,16 @@ fn transform_inner(code: &str, opts: TransformOptions) -> anyhow::Result<Transfo
             }
         };
 
+        let deps = if opts.analyze_dependencies {
+            let mut v = deps::Analyzer::default();
+
+            ss.visit_with(&mut v);
+
+            Some(v.deps)
+        } else {
+            None
+        };
+
         let mut returned_errors = None;
 
         if !errors.is_empty() {
@@ -383,7 +393,7 @@ fn transform_inner(code: &str, opts: TransformOptions) -> anyhow::Result<Transfo
         let code = {
             let mut buf = String::new();
             {
-                let mut wr = BasicCssWriter::new(
+                let wr = BasicCssWriter::new(
                     &mut buf,
                     if opts.source_map {
                         Some(&mut src_map)
@@ -427,6 +437,7 @@ fn transform_inner(code: &str, opts: TransformOptions) -> anyhow::Result<Transfo
             code,
             map,
             errors: returned_errors,
+            deps: deps.map(|v| serde_json::to_string(&v).unwrap()),
         })
     })
 }

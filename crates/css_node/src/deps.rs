@@ -8,11 +8,12 @@ use swc_css_codegen::{
 };
 use swc_css_visit::{Visit, VisitWith};
 
+#[derive(Default)]
 pub struct Analyzer {
     pub deps: Dependencies,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Default, Serialize)]
 pub struct Dependencies {
     pub imports: Vec<Import>,
     pub urls: Vec<CssUrl>,
@@ -72,7 +73,7 @@ fn normalize_import_href(n: &ImportHref) -> Option<CssUrl> {
 }
 
 fn normalize_url(n: &Url) -> Option<CssUrl> {
-    let v = &*n.value?;
+    let v = n.value.as_deref()?;
 
     Some(match v {
         UrlValue::Str(v) => parse_url(&v.value),
@@ -90,7 +91,7 @@ where
     for<'a> CodeGenerator<BasicCssWriter<'a, &'a mut String>>: Emit<N>,
 {
     let mut buf = String::new();
-    let mut wr = BasicCssWriter::new(
+    let wr = BasicCssWriter::new(
         &mut buf,
         None,
         BasicCssWriterConfig {
