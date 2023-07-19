@@ -280,7 +280,7 @@ fn minify_inner(code: &str, opts: MinifyOptions) -> anyhow::Result<TransformOutp
                         linefeed: LineFeed::LF,
                     },
                 );
-                let mut gen = CodeGenerator::new(&mut wr, CodegenConfig { minify: true });
+                let mut gen = CodeGenerator::new(wr, CodegenConfig { minify: true });
 
                 gen.emit(&ss).context("failed to emit")?;
             }
@@ -401,7 +401,7 @@ fn transform_inner(code: &str, opts: TransformOptions) -> anyhow::Result<Transfo
                     },
                 );
                 let mut gen = CodeGenerator::new(
-                    &mut wr,
+                    wr,
                     CodegenConfig {
                         minify: opts.minify,
                     },

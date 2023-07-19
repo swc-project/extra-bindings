@@ -1,6 +1,11 @@
 use serde::Serialize;
 use swc_atoms::JsWord;
+use swc_common::Spanned;
 use swc_css_ast::{ImportHref, ImportPrelude, Url, UrlValue};
+use swc_css_codegen::{
+    writer::basic::{BasicCssWriter, BasicCssWriterConfig, IndentType, LineFeed},
+    CodeGenerator, CodegenConfig, Emit,
+};
 use swc_css_visit::{Visit, VisitWith};
 
 pub struct Analyzer {
@@ -21,7 +26,7 @@ pub struct Import {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub layer: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub media: Option<String>,
+    pub media: Option<Vec<String>>,
 }
 
 #[derive(Debug, Serialize)]
@@ -37,7 +42,20 @@ impl Visit for Analyzer {
         let url = normalize_import_href(&n.href);
 
         if let Some(url) = url {
-            self.deps.imports.push(Import { url });
+            self.deps.imports.push(Import {
+                url,
+                supports: n
+                    .import_conditions
+                    .as_deref()
+                    .and_then(|n| n.supports.as_deref())
+                    .and_then(|n| {}),
+                layer: n.layer_name.as_deref().map(|n| {}),
+                media: n
+                    .import_conditions
+                    .as_deref()
+                    .and_then(|n| n.media.as_deref())
+                    .and_then(|n| n.queries.iter().map(print_node).collect()),
+            });
         }
     }
 
@@ -64,4 +82,26 @@ fn normalize_url(n: &Url) -> Option<CssUrl> {
 
 fn parse_url(s: &JsWord) -> CssUrl {
     CssUrl { value: s.clone() }
+}
+
+fn print_node<N>(n: N) -> Option<String>
+where
+    N: Spanned,
+    for<'a> CodeGenerator<BasicCssWriter<'a, &'a mut String>>: Emit<N>,
+{
+    let mut buf = String::new();
+    let mut wr = BasicCssWriter::new(
+        &mut buf,
+        None,
+        BasicCssWriterConfig {
+            indent_type: IndentType::Space,
+            indent_width: 0,
+            linefeed: LineFeed::LF,
+        },
+    );
+    let mut gen = CodeGenerator::new(wr, CodegenConfig { minify: true });
+
+    gen.emit(&n).ok()?;
+
+    Some(buf)
 }
