@@ -43,19 +43,19 @@ impl Visit for Analyzer {
 fn normalize_import_href(n: &ImportHref) -> Option<CssUrl> {
     match n {
         ImportHref::Url(n) => normalize_url(n),
-        ImportHref::Str(n) => Some(CssUrl {
-            value: n.value.clone(),
-        }),
+        ImportHref::Str(n) => Some(parse_url(&n.value)),
     }
 }
 
 fn normalize_url(n: &Url) -> Option<CssUrl> {
     let v = &*n.value?;
 
-    Some(CssUrl {
-        value: match v {
-            UrlValue::Str(v) => v.value.clone(),
-            UrlValue::Raw(v) => v.value.clone(),
-        },
+    Some(match v {
+        UrlValue::Str(v) => parse_url(&v.value),
+        UrlValue::Raw(v) => parse_url(&v.value),
     })
+}
+
+fn parse_url(s: &JsWord) -> CssUrl {
+    CssUrl { value: s.clone() }
 }
