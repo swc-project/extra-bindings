@@ -1,4 +1,4 @@
-const swc = require("../lib/index.js");
+const swc = require("../index.js");
 
 const css = `
 .foo {

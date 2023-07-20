@@ -61,6 +61,11 @@ struct MinifyTask {
     options: String,
 }
 
+struct TransformTask {
+    code: String,
+    options: String,
+}
+
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MinifyOptions {
@@ -186,6 +191,24 @@ impl CssModulesConfig {
         }
 
         Ok(res)
+    }
+}
+
+#[napi]
+impl Task for TransformTask {
+    type JsValue = TransformOutput;
+    type Output = TransformOutput;
+
+    fn compute(&mut self) -> napi::Result<Self::Output> {
+        let opts = deserialize_json(&self.options)
+            .context("failed to deserialize transform options")
+            .convert_err()?;
+
+        transform_inner(&self.code, opts).convert_err()
+    }
+
+    fn resolve(&mut self, _env: napi::Env, output: Self::Output) -> napi::Result<Self::JsValue> {
+        Ok(output)
     }
 }
 
@@ -464,11 +487,11 @@ pub fn minify_sync(code: Buffer, opts: Buffer) -> napi::Result<TransformOutput> 
 
 #[allow(unused)]
 #[napi]
-fn transform(code: Buffer, opts: Buffer, signal: Option<AbortSignal>) -> AsyncTask<MinifyTask> {
+fn transform(code: Buffer, opts: Buffer, signal: Option<AbortSignal>) -> AsyncTask<TransformTask> {
     let code = String::from_utf8_lossy(code.as_ref()).to_string();
     let options = String::from_utf8_lossy(opts.as_ref()).to_string();
 
-    let task = MinifyTask { code, options };
+    let task = TransformTask { code, options };
 
     AsyncTask::with_optional_signal(task, signal)
 }
