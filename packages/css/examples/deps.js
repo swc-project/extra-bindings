@@ -9,7 +9,7 @@ const css = `
 `;
 
 async function main() {
-  const output = await swc.transform(Buffer.from(css), {
+  const output = swc.transformSync(Buffer.from(css), {
     analyzeDependencies: true
   });
   console.log(output.deps);
