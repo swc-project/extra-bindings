@@ -15,7 +15,6 @@ async function main() {
       pattern: "[name]-[local]-[hash]",
     },
   });
-  console.log(output.code);
-  console.log(output.deps);
+  console.log(output);
 }
 main();
