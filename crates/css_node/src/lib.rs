@@ -1,7 +1,9 @@
 #[macro_use]
 extern crate napi_derive;
 
-use std::{backtrace::Backtrace, env, fmt::Write, panic::set_hook, sync::Arc};
+use std::{
+    backtrace::Backtrace, collections::HashMap, env, fmt::Write, panic::set_hook, sync::Arc,
+};
 
 use anyhow::{bail, Context};
 use napi::{bindgen_prelude::*, Task};
@@ -54,6 +56,10 @@ pub struct TransformOutput {
     /// JSON string.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub deps: Option<String>,
+
+    /// JSON string.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub modules_mapping: Option<String>,
 }
 
 struct MinifyTask {
@@ -118,6 +124,14 @@ enum CssClassNameSegment {
     Local,
     /// A hash of the file name.
     Hash,
+}
+
+#[derive(Serialize)]
+#[serde(tag = "type")]
+pub enum CssClassName {
+    Local { name: JsWord },
+    Global { name: JsWord },
+    Import { name: JsWord, from: JsWord },
 }
 
 impl swc_css_modules::TransformConfig for CssModuleTransformConfig {
@@ -326,6 +340,7 @@ fn minify_inner(code: &str, opts: MinifyOptions) -> anyhow::Result<TransformOutp
             map,
             errors: returned_errors,
             deps: Default::default(),
+            modules_mapping: Default::default(),
         })
     })
 }
@@ -394,8 +409,8 @@ fn transform_inner(code: &str, opts: TransformOptions) -> anyhow::Result<Transfo
             }
         }
 
-        if let Some(config) = opts.css_modules {
-            swc_css_modules::compile(
+        let modules_mapping = if let Some(config) = opts.css_modules {
+            let result = swc_css_modules::compile(
                 &mut ss,
                 CssModuleTransformConfig {
                     file_name: Arc::new(fm.name.clone()),
@@ -405,7 +420,38 @@ fn transform_inner(code: &str, opts: TransformOptions) -> anyhow::Result<Transfo
                         .context("failed to parse the pattern for CSS Modules")?,
                 },
             );
-        }
+            let map: HashMap<_, _> = result
+                .renamed
+                .into_iter()
+                .map(|(k, v)| {
+                    (
+                        k,
+                        v.into_iter()
+                            .map(|v| match v {
+                                swc_css_modules::CssClassName::Local { name } => {
+                                    CssClassName::Local { name: name.value }
+                                }
+                                swc_css_modules::CssClassName::Global { name } => {
+                                    CssClassName::Global { name: name.value }
+                                }
+                                swc_css_modules::CssClassName::Import { name, from } => {
+                                    CssClassName::Import {
+                                        name: name.value,
+                                        from,
+                                    }
+                                }
+                            })
+                            .collect::<Vec<_>>(),
+                    )
+                })
+                .collect();
+            Some(
+                serde_json::to_string(&map)
+                    .context("failed to serialize the mapping for CSS Modules")?,
+            )
+        } else {
+            None
+        };
 
         ss.visit_mut_with(&mut Compiler::new(Config {
             // TODO: preset-env
@@ -461,6 +507,7 @@ fn transform_inner(code: &str, opts: TransformOptions) -> anyhow::Result<Transfo
             map,
             errors: returned_errors,
             deps: deps.map(|v| serde_json::to_string(&v).unwrap()),
+            modules_mapping,
         })
     })
 }

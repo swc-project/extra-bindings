@@ -116,7 +116,7 @@ switch (platform) {
         nativeBinding = require('@swc/css-darwin-universal')
       }
       break
-    } catch {}
+    } catch { }
     switch (arch) {
       case 'x64':
         localFileExisted = existsSync(join(__dirname, 'css.darwin-x64.node'))

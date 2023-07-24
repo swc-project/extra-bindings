@@ -9,9 +9,12 @@ const css = `
 `;
 
 async function main() {
-  const output = swc.transformSync(Buffer.from(css), {
-    analyzeDependencies: true
+  const output = await swc.transform(Buffer.from(css), {
+    analyzeDependencies: true,
+    cssModules: {
+      pattern: "[name]-[local]-[hash]",
+    },
   });
-  console.log(output.deps);
+  console.log(output);
 }
 main();
