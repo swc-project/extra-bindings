@@ -14,6 +14,8 @@ export interface TransformOutput {
   errors?: Array<Diagnostic>
   /** JSON string. */
   deps?: string
+  /** JSON string. */
+  modulesMapping?: string
 }
 export function minify(code: Buffer, opts: Buffer, signal?: AbortSignal | undefined | null): Promise<TransformOutput>
 export function minifySync(code: Buffer, opts: Buffer): TransformOutput
