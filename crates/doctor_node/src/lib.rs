@@ -36,13 +36,23 @@ struct GetPluginVersionTask {
     options: String,
 }
 
+fn invoke_get_version(
+    wasm_bytes: &[u8],
+) -> anyhow::Result<PluginSerializedBytes<PluginCorePkgDiagnostics>> {
+}
+
 #[napi]
 impl Task for GetPluginVersionTask {
     type JsValue = PluginVersionInfo;
     type Output = PluginVersionInfo;
 
     fn compute(&mut self) -> napi::Result<Self::Output> {
-        let result: PluginSerializedBytes<PluginCorePkgDiagnostics> = {};
+        let result = invoke_get_version(&self.wasm).map_err(|err| {
+            napi::Error::new(
+                napi::Status::GenericFailure,
+                format!("Failed to get plugin version: {:?}", err),
+            )
+        })?;
     }
 
     fn resolve(&mut self, _env: napi::Env, output: Self::Output) -> napi::Result<Self::JsValue> {
