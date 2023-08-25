@@ -6,7 +6,7 @@ mod util;
 use std::{backtrace::Backtrace, env, panic::set_hook};
 
 use napi::{
-    bindgen_prelude::{AbortSignal, Buffer},
+    bindgen_prelude::{AbortSignal, AsyncTask, Buffer},
     Task,
 };
 use swc_common::plugin::{
@@ -56,14 +56,12 @@ pub fn get_plugin_version(
     wasm: Buffer,
     opts: Buffer,
     signal: Option<AbortSignal>,
-) -> napi::Result<PluginVersionInfo> {
-    let code = String::from_utf8_lossy(code.as_ref()).to_string();
+) -> AsyncTask<GetPluginVersionTask> {
     let options = String::from_utf8_lossy(opts.as_ref()).to_string();
 
-    let task = MinifyTask {
-        code,
+    let task = GetPluginVersionTask {
+        wasm: wasm.as_ref().to_vec(),
         options,
-        is_fragment: true,
     };
 
     AsyncTask::with_optional_signal(task, signal)
