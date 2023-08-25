@@ -33,14 +33,14 @@ swc_common = { version = "0.32.0", features = [
   "diagnostic-serde",
 ] }
 swc_atoms = "0.5.7"
-swc_css_ast = "0.137.17"
-swc_css_codegen = "0.147.20"
-swc_css_compat = "0.23.20"
-swc_css_minifier = "0.112.20"
-swc_css_modules = "0.25.22"
-swc_css_parser = "0.146.20"
-swc_css_visit = "0.136.17"
-swc_error_reporters = "0.15.17"
+swc_css_ast = "0.139.0"
+swc_css_codegen = "0.149.0"
+swc_css_compat = "0.25.0"
+swc_css_minifier = "0.114.0"
+swc_css_modules = "0.27.0"
+swc_css_parser = "0.148.0"
+swc_css_visit = "0.138.0"
+swc_error_reporters = "0.16.0"
 swc_nodejs_common = "0.0.8"
 tracing = { version = "0.1.37", features = ["release_max_level_info"] }
 tracing-subscriber = { version = "0.3.17", features = ["env-filter"] }

@@ -36,7 +36,7 @@ swc_ecma_minifier = "0.184.12"
 swc_ecma_parser = "0.137.3"
 swc_ecma_transforms_base = "0.130.3"
 swc_ecma_visit = "0.93.1"
-swc_error_reporters = "0.15.17"
+swc_error_reporters = "0.16.0"
 swc_nodejs_common = "0.0.8"
 tracing = { version = "0.1.37", features = ["release_max_level_info"] }
 tracing-subscriber = { version = "0.3.17", features = ["env-filter"] }
