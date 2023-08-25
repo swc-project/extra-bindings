@@ -477,6 +477,7 @@ jobs:
         shell: bash
         run: |
           ./scripts/move-artifacts.sh css || true
+          ./scripts/move-artifacts.sh doctor || true
           ./scripts/move-artifacts.sh html || true
           ./scripts/move-artifacts.sh linter || true
 
@@ -493,6 +494,7 @@ jobs:
         run: |
           echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
           (cd packages/css && npm publish --access public || true)
+          (cd packages/doctor && npm publish --access public || true)
           (cd packages/html && npm publish --access public || true)
           (cd packages/linter && npm publish --access public || true)
         env:
