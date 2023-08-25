@@ -41,172 +41,20 @@ fn init() {
     }
 }
 
-#[napi_derive::napi(object)]
-#[derive(Debug, Serialize)]
-pub struct Diagnostic {
-    pub level: String,
-    pub message: String,
-    pub span: serde_json::Value,
-}
+pub struct PluginVersionInfo {}
 
-#[napi_derive::napi(object)]
-#[derive(Debug, Serialize)]
-pub struct TransformOutput {
-    pub code: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub errors: Option<Vec<Diagnostic>>,
-}
-
-struct MinifyTask {
-    code: String,
+struct GetPluginVersionTask {
+    wasm: Vec<u8>,
     options: String,
-    is_fragment: bool,
-}
-
-#[napi_derive::napi(object)]
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Attribute {
-    #[serde(default)]
-    pub namespace: Option<String>,
-    #[serde(default)]
-    pub prefix: Option<String>,
-    pub name: String,
-    #[serde(default)]
-    pub value: Option<String>,
-}
-
-#[napi_derive::napi(object)]
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Element {
-    pub tag_name: String,
-    pub namespace: String,
-    pub attributes: Vec<Attribute>,
-    pub is_self_closing: bool,
-}
-
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct MinifyOptions {
-    #[serde(default)]
-    filename: Option<String>,
-
-    // Parser options
-    #[serde(default)]
-    iframe_srcdoc: bool,
-    #[serde(default)]
-    scripting_enabled: bool,
-    /// Used only for Document Fragment
-    /// Default: NoQuirks
-    #[serde(default)]
-    mode: Option<DocumentMode>,
-    /// Used only for Document Fragment
-    /// Default: `template` in HTML namespace
-    #[serde(default)]
-    context_element: Option<Element>,
-    /// Used only for Document Fragment
-    /// Default: None
-    #[serde(default)]
-    form_element: Option<Element>,
-
-    // Minification options
-    #[serde(default)]
-    force_set_html5_doctype: bool,
-    #[serde(default = "default_collapse_whitespaces")]
-    collapse_whitespaces: CollapseWhitespaces,
-    // Remove safe empty elements with metadata content, i.e. the `script` and `style` element
-    // without content and attributes, `meta` and `link` elements without attributes and etc
-    #[serde(default = "true_by_default")]
-    remove_empty_metadata_elements: bool,
-    #[serde(default = "true_by_default")]
-    remove_comments: bool,
-    #[serde(default = "default_preserve_comments")]
-    preserve_comments: Option<Vec<CachedRegex>>,
-    #[serde(default = "true_by_default")]
-    minify_conditional_comments: bool,
-    #[serde(default = "true_by_default")]
-    remove_empty_attributes: bool,
-    #[serde(default)]
-    remove_redundant_attributes: RemoveRedundantAttributes,
-    #[serde(default = "true_by_default")]
-    collapse_boolean_attributes: bool,
-    #[serde(default = "true_by_default")]
-    normalize_attributes: bool,
-    #[serde(default = "minify_json_by_default")]
-    minify_json: MinifyJsonOption,
-    #[serde(default = "minify_js_by_default")]
-    minify_js: MinifyJsOption,
-    #[serde(default = "minify_css_by_default")]
-    minify_css: MinifyCssOption,
-    #[serde(default)]
-    minify_additional_scripts_content: Option<Vec<(CachedRegex, MinifierType)>>,
-    #[serde(default)]
-    minify_additional_attributes: Option<Vec<(CachedRegex, MinifierType)>>,
-    #[serde(default = "true_by_default")]
-    sort_space_separated_attribute_values: bool,
-    #[serde(default)]
-    sort_attributes: bool,
-    #[serde(default = "true_by_default")]
-    merge_metadata_elements: bool,
-
-    // Codegen options
-    #[serde(default)]
-    tag_omission: Option<bool>,
-    #[serde(default)]
-    self_closing_void_elements: Option<bool>,
-    #[serde(default)]
-    quotes: Option<bool>,
-}
-
-const fn true_by_default() -> bool {
-    true
-}
-
-const fn minify_json_by_default() -> MinifyJsonOption {
-    MinifyJsonOption::Bool(true)
-}
-
-const fn minify_js_by_default() -> MinifyJsOption {
-    MinifyJsOption::Bool(true)
-}
-
-const fn minify_css_by_default() -> MinifyCssOption {
-    MinifyCssOption::Bool(true)
-}
-
-fn default_preserve_comments() -> Option<Vec<CachedRegex>> {
-    Some(vec![
-        // License comments
-        CachedRegex::new("@preserve").unwrap(),
-        CachedRegex::new("@copyright").unwrap(),
-        CachedRegex::new("@lic").unwrap(),
-        CachedRegex::new("@cc_on").unwrap(),
-        // Allow to keep custom comments
-        CachedRegex::new("^!").unwrap(),
-        // Server-side comments
-        CachedRegex::new("^\\s*#").unwrap(),
-        // Conditional IE comments
-        CachedRegex::new("^\\[if\\s[^\\]+]").unwrap(),
-        CachedRegex::new("\\[endif]").unwrap(),
-    ])
-}
-
-const fn default_collapse_whitespaces() -> CollapseWhitespaces {
-    CollapseWhitespaces::OnlyMetadata
 }
 
 #[napi]
-impl Task for MinifyTask {
-    type JsValue = TransformOutput;
-    type Output = TransformOutput;
+impl Task for GetPluginVersionTask {
+    type JsValue = PluginVersionInfo;
+    type Output = PluginVersionInfo;
 
     fn compute(&mut self) -> napi::Result<Self::Output> {
-        let opts = deserialize_json(&self.options)
-            .context("failed to deserialize minifier options")
-            .convert_err()?;
-
-        minify_inner(&self.code, opts, self.is_fragment).convert_err()
+        let result: PluginSerializedBytes<PluginCorePkgDiagnostics> = {};
     }
 
     fn resolve(&mut self, _env: napi::Env, output: Self::Output) -> napi::Result<Self::JsValue> {
@@ -457,26 +305,11 @@ fn minify_inner(
 
 #[allow(unused)]
 #[napi]
-fn minify(code: Buffer, opts: Buffer, signal: Option<AbortSignal>) -> AsyncTask<MinifyTask> {
-    let code = String::from_utf8_lossy(code.as_ref()).to_string();
-    let options = String::from_utf8_lossy(opts.as_ref()).to_string();
-
-    let task = MinifyTask {
-        code,
-        options,
-        is_fragment: false,
-    };
-
-    AsyncTask::with_optional_signal(task, signal)
-}
-
-#[allow(unused)]
-#[napi]
-fn minify_fragment(
-    code: Buffer,
+pub fn get_plugin_version(
+    wasm: Buffer,
     opts: Buffer,
     signal: Option<AbortSignal>,
-) -> AsyncTask<MinifyTask> {
+) -> napi::Result<TransformOutput> {
     let code = String::from_utf8_lossy(code.as_ref()).to_string();
     let options = String::from_utf8_lossy(opts.as_ref()).to_string();
 
@@ -487,22 +320,4 @@ fn minify_fragment(
     };
 
     AsyncTask::with_optional_signal(task, signal)
-}
-
-#[allow(unused)]
-#[napi]
-pub fn minify_sync(code: Buffer, opts: Buffer) -> napi::Result<TransformOutput> {
-    let code = String::from_utf8_lossy(code.as_ref());
-    let options = get_deserialized(opts)?;
-
-    minify_inner(&code, options, false).convert_err()
-}
-
-#[allow(unused)]
-#[napi]
-pub fn minify_fragment_sync(code: Buffer, opts: Buffer) -> napi::Result<TransformOutput> {
-    let code = String::from_utf8_lossy(code.as_ref());
-    let options = get_deserialized(opts)?;
-
-    minify_inner(&code, options, true).convert_err()
 }
