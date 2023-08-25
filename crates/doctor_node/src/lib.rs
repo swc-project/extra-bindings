@@ -5,31 +5,13 @@ mod util;
 
 use std::{backtrace::Backtrace, env, panic::set_hook};
 
-use anyhow::{bail, Context};
-use napi::{bindgen_prelude::*, Task};
-use serde::{Deserialize, Serialize};
-use swc_atoms::js_word;
-use swc_cached::regex::CachedRegex;
-use swc_common::{FileName, DUMMY_SP};
-use swc_html::{
-    ast::{DocumentMode, Namespace},
-    codegen::{
-        writer::basic::{BasicHtmlWriter, BasicHtmlWriterConfig},
-        CodeGenerator, CodegenConfig, Emit,
-    },
-    parser::{parse_file_as_document, parse_file_as_document_fragment},
+use napi::{
+    bindgen_prelude::{AbortSignal, Buffer},
+    Task,
 };
-use swc_html_ast::{Document, DocumentFragment};
-use swc_html_minifier::{
-    minify_document, minify_document_fragment,
-    option::{
-        CollapseWhitespaces, MinifierType, MinifyCssOption, MinifyJsOption, MinifyJsonOption,
-        RemoveRedundantAttributes,
-    },
+use swc_common::plugin::{
+    diagnostics::PluginCorePkgDiagnostics, serialized::PluginSerializedBytes,
 };
-use swc_nodejs_common::{deserialize_json, get_deserialized, MapErr};
-
-use crate::util::try_with;
 
 #[napi::module_init]
 fn init() {
@@ -41,7 +23,13 @@ fn init() {
     }
 }
 
-pub struct PluginVersionInfo {}
+#[napi(object)]
+pub struct PluginVersionInfo {
+    pub pkg_version: String,
+    pub git_sha: String,
+    pub cargo_features: String,
+    pub ast_schema_version: u32,
+}
 
 struct GetPluginVersionTask {
     wasm: Vec<u8>,
@@ -68,7 +56,7 @@ pub fn get_plugin_version(
     wasm: Buffer,
     opts: Buffer,
     signal: Option<AbortSignal>,
-) -> napi::Result<TransformOutput> {
+) -> napi::Result<PluginVersionInfo> {
     let code = String::from_utf8_lossy(code.as_ref()).to_string();
     let options = String::from_utf8_lossy(opts.as_ref()).to_string();
 
