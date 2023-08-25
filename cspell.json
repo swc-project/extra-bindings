@@ -8,6 +8,7 @@
         "minifier",
         "napi",
         "srcdoc",
+        "wasi",
         "Whitespaces",
         "XLINK"
     ]
