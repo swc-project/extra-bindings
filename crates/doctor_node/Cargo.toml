@@ -18,6 +18,8 @@ crate-type = ["cdylib"]
 napi-build = { version = "1" }
 
 [dependencies]
+wasmer = { version = "4.0.0" }
+wasmer-wasix = { version = "0.9.0" }
 anyhow = "1"
 napi = { version = "2", default-features = false, features = [
   "napi3",
@@ -33,7 +35,6 @@ swc_common = { version = "0.32.0", features = [
   "diagnostic-serde",
   "plugin-rt",
 ] }
-wasmer = "1.0.0-alpha5"
 swc_nodejs_common = "0.0.8"
 tracing = { version = "0.1.37", features = ["release_max_level_info"] }
 tracing-subscriber = { version = "0.3.17", features = ["env-filter"] }
