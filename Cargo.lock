@@ -265,6 +265,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "doctor_node"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "napi",
+ "napi-build 1.2.1",
+ "napi-derive",
+ "serde",
+ "serde_json",
+ "swc_atoms",
+ "swc_cached",
+ "swc_common",
+ "swc_error_reporters",
+ "swc_html",
+ "swc_html_ast",
+ "swc_html_minifier",
+ "swc_nodejs_common",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "either"
 version = "1.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
