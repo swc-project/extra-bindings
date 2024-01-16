@@ -155,10 +155,15 @@ jobs:
           profile: minimal
           override: true
           target: ${{ matrix.settings.target }}
-      - name: Install node dependencies
+      - name: Install dependencies
+        # run corepack enable again
+        # because on Windows, yarn will use `cmd` to run `yarn install`
         shell: bash
         run: |
-          yarn
+          corepack enable
+          yarn install
+          curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+          echo '/usr/local/cargo/bin' >> $GITHUB_PATH
       - name: Cache cargo registry
         uses: actions/cache@v3
         with:
@@ -180,8 +185,15 @@ jobs:
         run: ${{ matrix.settings.setup }}
         if: ${{ matrix.settings.setup }}
         shell: bash
+
       - name: Install dependencies
-        run: yarn install --ignore-scripts --registry https://registry.npmjs.org --network-timeout 300000
+        # run corepack enable again
+        # because on Windows, yarn will use `cmd` to run `yarn install`
+        shell: bash
+        run: |
+          corepack enable
+          yarn install
+
       - name: Build in docker
         uses: addnab/docker-run-action@v3
         if: ${{ matrix.settings.docker }}
