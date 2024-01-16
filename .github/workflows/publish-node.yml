@@ -218,6 +218,9 @@ jobs:
     runs-on: ${{ matrix.settings.host }}
     steps:
       - uses: actions/checkout@v3
+      - name: Corepack
+        shell: bash
+        run: corepack enable
       - name: Setup node
         uses: actions/setup-node@v3
         with:
@@ -256,6 +259,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Corepack
+        shell: bash
+        run: corepack enable
       - name: Setup node
         uses: actions/setup-node@v3
         with:
@@ -294,6 +300,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Corepack
+        shell: bash
+        run: corepack enable
       - name: Setup node
         uses: actions/setup-node@v3
         with:
