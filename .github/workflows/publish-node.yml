@@ -52,9 +52,6 @@ jobs:
             build: >-
               set -e &&
               export CARGO_PROFILE_RELEASE_LTO=false &&
-              RUSTFLAGS='-C target-feature=+sse2' cargo build --manifest-path ./bindings/swc_cli/Cargo.toml --release --features plugin &&
-              rm -rf target/release/.cargo-lock &&
-              cp bindings/target/release/swc . && chmod +x ./swc &&
               RUSTFLAGS='-C target-feature=+sse2 -C target-feature=-crt-static' yarn build
           - host: macos-latest
             target: aarch64-apple-darwin
@@ -64,9 +61,6 @@ jobs:
               export CXX=$(xcrun -f clang++);
               SYSROOT=$(xcrun --sdk macosx --show-sdk-path);
               export CFLAGS="-isysroot $SYSROOT -isystem $SYSROOT";
-              cargo build --manifest-path ./bindings/swc_cli/Cargo.toml --release --features plugin --target=aarch64-apple-darwin
-              cp ./bindings/target/aarch64-apple-darwin/release/swc .
-              chmod +x ./swc
               yarn build -- --target aarch64-apple-darwin
           - host: ubuntu-latest
             target: aarch64-unknown-linux-gnu
@@ -75,17 +69,12 @@ jobs:
               set -e &&
               export JEMALLOC_SYS_WITH_LG_PAGE=16 &&
               rustup target add aarch64-unknown-linux-gnu &&
-              RUSTFLAGS='' cargo build --manifest-path ./bindings/swc_cli/Cargo.toml --release --features plugin --target aarch64-unknown-linux-gnu &&
-              cp ./bindings/target/aarch64-unknown-linux-gnu/release/swc . && chmod +x ./swc &&
               export CC_aarch64_unknown_linux_gnu=/usr/aarch64-unknown-linux-gnu/bin/aarch64-unknown-linux-gnu-gcc &&
               yarn build -- --target aarch64-unknown-linux-gnu
           - host: ubuntu-latest
             target: armv7-unknown-linux-gnueabihf
             build: |
-              export DISABLE_PLUGIN_E2E_TESTS=true
-              yarn napi build --bin swc --release --target armv7-unknown-linux-gnueabihf --manifest-path ./bindings/swc_cli/Cargo.toml -x --target-dir ../release -o .
-              chmod +x ./swc
-              yarn build -- --target armv7-unknown-linux-gnueabihf --no-default-features --features swc_v1 --use-napi-cross
+              yarn build -- --target armv7-unknown-linux-gnueabihf --use-napi-cross
           - host: ubuntu-latest
             target: aarch64-unknown-linux-musl
             downloadTarget: aarch64-unknown-linux-musl
@@ -94,20 +83,14 @@ jobs:
               export JEMALLOC_SYS_WITH_LG_PAGE=16 &&
               rustup toolchain install $(cat ./rust-toolchain) &&
               rustup target add aarch64-unknown-linux-musl &&
-              RUSTFLAGS='-C target-feature=+crt-static -C link-arg=-lgcc' cargo build --manifest-path ./bindings/swc_cli/Cargo.toml --release --features plugin --target aarch64-unknown-linux-musl &&
-              rm -rf target/release/.cargo-lock &&
-              cp bindings/target/aarch64-unknown-linux-musl/release/swc . && chmod +x ./swc &&
               env RUSTFLAGS='-C target-feature=-crt-static' yarn build -- --target=aarch64-unknown-linux-musl
           - host: windows-latest
             target: aarch64-pc-windows-msvc
             # Disable `LTO` and increase `codegen-units` to avoid llvm `OOM` on GitHub Actions.
             build: |
-              export DISABLE_PLUGIN_E2E_TESTS=true
               export CARGO_PROFILE_RELEASE_CODEGEN_UNITS=256
               export CARGO_PROFILE_RELEASE_LTO=false
-              cargo build --manifest-path ./bindings/swc_cli/Cargo.toml --release --target aarch64-pc-windows-msvc
-              cp bindings/target/aarch64-pc-windows-msvc/release/swc.exe .
-              yarn build -- --target aarch64-pc-windows-msvc --no-default-features --features swc_v1
+              yarn build -- --target aarch64-pc-windows-msvc
 
     name: stable - ${{ matrix.settings.target }} - node@16
     runs-on: ${{ matrix.settings.host }}
