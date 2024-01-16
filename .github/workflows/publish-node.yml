@@ -36,7 +36,7 @@ jobs:
             # use npm to run test, because of corepack link the yarn with x64 Node.js
             build: |
               export CARGO_PROFILE_RELEASE_LTO=false
-              yarn build -- --target i686-pc-windows-msvc
+              yarn build --target i686-pc-windows-msvc
               yarn test
             target: i686-pc-windows-msvc
           - host: ubuntu-latest
@@ -44,7 +44,7 @@ jobs:
             docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian
             build: >-
               set -e &&
-              unset CC_x86_64_unknown_linux_gnu && unset CC && yarn build -- --target x86_64-unknown-linux-gnu
+              unset CC_x86_64_unknown_linux_gnu && unset CC && yarn build --target x86_64-unknown-linux-gnu
           - host: ubuntu-latest
             target: x86_64-unknown-linux-musl
             # musl build is slow, let's disable the LTO
@@ -61,7 +61,7 @@ jobs:
               export CXX=$(xcrun -f clang++);
               SYSROOT=$(xcrun --sdk macosx --show-sdk-path);
               export CFLAGS="-isysroot $SYSROOT -isystem $SYSROOT";
-              yarn build -- --target aarch64-apple-darwin
+              yarn build --target aarch64-apple-darwin
           - host: ubuntu-latest
             target: aarch64-unknown-linux-gnu
             docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian-aarch64
@@ -70,11 +70,11 @@ jobs:
               export JEMALLOC_SYS_WITH_LG_PAGE=16 &&
               rustup target add aarch64-unknown-linux-gnu &&
               export CC_aarch64_unknown_linux_gnu=/usr/aarch64-unknown-linux-gnu/bin/aarch64-unknown-linux-gnu-gcc &&
-              yarn build -- --target aarch64-unknown-linux-gnu
+              yarn build --target aarch64-unknown-linux-gnu
           - host: ubuntu-latest
             target: armv7-unknown-linux-gnueabihf
             build: |
-              yarn build -- --target armv7-unknown-linux-gnueabihf --use-napi-cross
+              yarn build --target armv7-unknown-linux-gnueabihf --use-napi-cross
           - host: ubuntu-latest
             target: aarch64-unknown-linux-musl
             downloadTarget: aarch64-unknown-linux-musl
@@ -83,14 +83,14 @@ jobs:
               export JEMALLOC_SYS_WITH_LG_PAGE=16 &&
               rustup toolchain install $(cat ./rust-toolchain) &&
               rustup target add aarch64-unknown-linux-musl &&
-              env RUSTFLAGS='-C target-feature=-crt-static' yarn build -- --target=aarch64-unknown-linux-musl
+              env RUSTFLAGS='-C target-feature=-crt-static' yarn build --target=aarch64-unknown-linux-musl
           - host: windows-latest
             target: aarch64-pc-windows-msvc
             # Disable `LTO` and increase `codegen-units` to avoid llvm `OOM` on GitHub Actions.
             build: |
               export CARGO_PROFILE_RELEASE_CODEGEN_UNITS=256
               export CARGO_PROFILE_RELEASE_LTO=false
-              yarn build -- --target aarch64-pc-windows-msvc
+              yarn build --target aarch64-pc-windows-msvc
 
     name: stable - ${{ matrix.settings.target }} - node@16
     runs-on: ${{ matrix.settings.host }}
