@@ -74,7 +74,7 @@ jobs:
           - host: ubuntu-latest
             target: armv7-unknown-linux-gnueabihf
             build: |
-              yarn build --target armv7-unknown-linux-gnueabihf --use-napi-cross
+              yarn build --target armv7-unknown-linux-gnueabihf --zig
           - host: ubuntu-latest
             target: aarch64-unknown-linux-musl
             downloadTarget: aarch64-unknown-linux-musl
