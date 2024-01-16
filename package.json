@@ -35,7 +35,8 @@
     "url": "https://opencollective.com/swc"
   },
   "scripts": {
-    "prepare": "husky install && git config feature.manyFiles true"
+    "prepare": "husky install",
+    "build": "yarn workspaces foreach --all run build"
   },
   "devDependencies": {
     "@taplo/cli": "^0.3.2",
