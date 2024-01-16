@@ -12,10 +12,12 @@ env:
 on:
   push:
     branches:
-      - "*"
+      - ci
+      - pub*
+      - ci*
+      - main
     tags:
       - v*
-  pull_request:
 
 jobs:
   build:
