@@ -310,6 +310,7 @@ fn minify_inner(
                     swc_html::parser::parser::ParserConfig {
                         scripting_enabled,
                         iframe_srcdoc: opts.iframe_srcdoc,
+                        ..Default::default()
                     },
                     &mut errors,
                 );
@@ -337,6 +338,7 @@ fn minify_inner(
                     swc_html::parser::parser::ParserConfig {
                         scripting_enabled,
                         iframe_srcdoc: opts.iframe_srcdoc,
+                        ..Default::default()
                     },
                     &mut errors,
                 );

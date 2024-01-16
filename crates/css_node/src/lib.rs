@@ -256,6 +256,7 @@ fn minify_inner(code: &str, opts: MinifyOptions) -> anyhow::Result<TransformOutp
         let mut errors = vec![];
         let ss = swc_css_parser::parse_file::<swc_css_ast::Stylesheet>(
             &fm,
+            None,
             swc_css_parser::parser::ParserConfig {
                 allow_wrong_line_comments: false,
                 css_modules: false,
@@ -357,6 +358,7 @@ fn transform_inner(code: &str, opts: TransformOptions) -> anyhow::Result<Transfo
         let mut errors = vec![];
         let ss = swc_css_parser::parse_file::<swc_css_ast::Stylesheet>(
             &fm,
+            None,
             swc_css_parser::parser::ParserConfig {
                 allow_wrong_line_comments: false,
                 css_modules: opts.css_modules.is_some(),
