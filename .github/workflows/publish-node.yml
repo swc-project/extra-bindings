@@ -129,6 +129,9 @@ jobs:
     runs-on: ${{ matrix.settings.host }}
     steps:
       - uses: actions/checkout@v3
+      - name: Corepack
+        shell: bash
+        run: corepack enable
       - name: Setup node x64
         uses: actions/setup-node@v3
         if: matrix.settings.target != 'i686-pc-windows-msvc'
