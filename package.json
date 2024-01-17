@@ -1,6 +1,5 @@
 {
   "name": "@swc/bindings",
-  "packageManager": "yarn@4.0.2",
   "version": "1.0.0",
   "main": "index.js",
   "repository": "git@github.com:swc-project/swc.git",
