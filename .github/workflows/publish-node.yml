@@ -39,7 +39,7 @@ jobs:
             build: |
               export CARGO_PROFILE_RELEASE_LTO=false
               npm run build --target i686-pc-windows-msvc
-              yarn test
+              npm test
             target: i686-pc-windows-msvc
           - host: ubuntu-latest
             target: x86_64-unknown-linux-gnu
@@ -107,7 +107,7 @@ jobs:
         with:
           node-version: 20
           check-latest: true
-          cache: yarn
+          cache: npm
           architecture: x64
       - name: Setup node x86
         uses: actions/setup-node@v4
@@ -115,7 +115,7 @@ jobs:
         with:
           node-version: 20
           check-latest: true
-          cache: yarn
+          cache: npm
           architecture: x86
       - name: Install
         uses: actions-rs/toolchain@v1
@@ -132,11 +132,11 @@ jobs:
 
       - name: Install dependencies
         # run corepack enable again
-        # because on Windows, yarn will use `cmd` to run `yarn install`
+        # because on Windows, yarn will use `cmd` to run `npm ci`
         shell: bash
         run: |
           corepack enable
-          yarn install
+          npm ci
           curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
           echo '/usr/local/cargo/bin' >> $GITHUB_PATH
       - name: Cache cargo registry
@@ -163,11 +163,11 @@ jobs:
 
       - name: Install dependencies
         # run corepack enable again
-        # because on Windows, yarn will use `cmd` to run `yarn install`
+        # because on Windows, yarn will use `cmd` to run `npm ci`
         shell: bash
         run: |
           corepack enable
-          yarn install
+          npm ci
 
       - name: Build in docker
         uses: addnab/docker-run-action@v3
@@ -220,7 +220,7 @@ jobs:
           path: node_modules
           key: npm-cache-test-${{ matrix.settings.target }}-${{ matrix.node }}
       - name: Install dependencies
-        run: yarn install --ignore-scripts --registry https://registry.npmjs.org --network-timeout 300000
+        run: npm ci
       - name: Download artifacts
         uses: actions/download-artifact@v3
         with:
@@ -230,9 +230,9 @@ jobs:
         run: ls -R .
         shell: bash
       - name: Build TypeScript
-        run: yarn workspaces foreach --all run build:ts
+        run: npm run build:ts -ws
       - name: Test bindings
-        run: yarn workspaces foreach --all run test
+        run: npm test -ws
   test-linux-x64-gnu-binding:
     name: Test bindings on Linux-x64-gnu - node@${{ matrix.node }}
     needs:
@@ -260,7 +260,7 @@ jobs:
           path: node_modules
           key: npm-cache-test-linux-x64-gnu-${{ matrix.node }}
       - name: Install dependencies
-        run: yarn install --ignore-scripts --registry https://registry.npmjs.org --network-timeout 300000
+        run: npm ci
       - name: Download artifacts
         uses: actions/download-artifact@v3
         with:
@@ -270,9 +270,9 @@ jobs:
         run: ls -R .
         shell: bash
       - name: Build TypeScript
-        run: yarn workspaces foreach --all run build:ts
+        run: npm run build:ts -ws
       - name: Test bindings
-        run: docker run --rm -v $(pwd):/swc -w /swc node:${{ matrix.node }}-slim yarn workspaces foreach --all run test
+        run: docker run --rm -v $(pwd):/swc -w /swc node:${{ matrix.node }}-slim npm test -ws
   test-linux-x64-musl-binding:
     name: Test bindings on x86_64-unknown-linux-musl - node@${{ matrix.node }}
     needs:
@@ -300,7 +300,7 @@ jobs:
           path: node_modules
           key: npm-cache-test-x86_64-unknown-linux-musl-${{ matrix.node }}
       - name: Install dependencies
-        run: yarn install --ignore-scripts --registry https://registry.npmjs.org --network-timeout 300000
+        run: npm ci
       - name: Download artifacts
         uses: actions/download-artifact@v3
         with:
@@ -310,9 +310,9 @@ jobs:
         run: ls -R .
         shell: bash
       - name: Build TypeScript
-        run: yarn workspaces foreach --all run build:ts
+        run: npm run build:ts -ws
       - name: Test bindings
-        run: docker run --rm -v $(pwd):/swc -w /swc node:${{ matrix.node }}-alpine yarn workspaces foreach --all run test
+        run: docker run --rm -v $(pwd):/swc -w /swc node:${{ matrix.node }}-alpine npm test -ws
   test-linux-aarch64-gnu-binding:
     name: Test bindings on aarch64-unknown-linux-gnu - node@${{ matrix.node }}
     needs:
@@ -341,9 +341,9 @@ jobs:
           path: node_modules
           key: npm-cache-test-linux-aarch64-gnu-${{ matrix.node }}
       - name: Install dependencies
-        run: yarn install --ignore-scripts --ignore-platform --registry https://registry.npmjs.org --network-timeout 300000
+        run: npm ci
       - name: Build TypeScript
-        run: yarn workspaces foreach --all run build:ts
+        run: npm run build:ts -ws
       - name: Setup and run tests
         uses: addnab/docker-run-action@v3
         with:
@@ -351,7 +351,7 @@ jobs:
           options: "-v ${{ github.workspace }}:/build -w /build"
           run: |
             set -e
-            yarn workspaces foreach --all run test
+            npm test -ws
             ls -la
   test-linux-aarch64-musl-binding:
     name: Test bindings on aarch64-unknown-linux-musl - node@${{ matrix.node }}
@@ -375,9 +375,9 @@ jobs:
           path: node_modules
           key: npm-cache-test-linux-aarch64-musl-${{ matrix.node }}
       - name: Install dependencies
-        run: yarn install --ignore-scripts --ignore-platform --registry https://registry.npmjs.org --network-timeout 300000
+        run: npm ci
       - name: Build TypeScript
-        run: yarn workspaces foreach --all run build:ts
+        run: npm run build:ts -ws
       - name: Setup and run tests
         uses: addnab/docker-run-action@v3
         with:
@@ -386,7 +386,7 @@ jobs:
           run: |
             set -e
             apk add nodejs npm yarn
-            yarn workspaces foreach --all run test
+            npm test -ws
   test-linux-arm-gnueabihf-binding:
     name: Test bindings on armv7-unknown-linux-gnueabihf - node@${{ matrix.node }}
     needs:
@@ -415,9 +415,9 @@ jobs:
           path: node_modules
           key: npm-cache-test-linux-arm-gnueabihf-${{ matrix.node }}
       - name: Install dependencies
-        run: yarn install --ignore-scripts --ignore-platform --registry https://registry.npmjs.org --network-timeout 300000
+        run: npm ci
       - name: Build TypeScript
-        run: yarn workspaces foreach --all run build:ts
+        run: npm run build:ts -ws
       - name: Setup and run tests
         uses: addnab/docker-run-action@v3
         with:
@@ -425,7 +425,7 @@ jobs:
           options: "-v ${{ github.workspace }}:/build -w /build"
           run: |
             set -e
-            yarn workspaces foreach --all run test
+            npm test -ws
             ls -la
   publish:
     if: ${{ startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/ci' }}
@@ -457,10 +457,10 @@ jobs:
           key: npm-cache-publish
 
       - name: Install dependencies
-        run: yarn install --ignore-scripts --registry https://registry.npmjs.org --network-timeout 300000
+        run: npm ci
 
       - name: Build typescript files
-        run: yarn workspaces foreach --all run build:ts
+        run: npm run build:ts -ws
 
       - name: Download all artifacts
         uses: actions/download-artifact@v3
@@ -481,7 +481,7 @@ jobs:
       - name: Move binaries
         shell: bash
         run: |
-          yarn workspaces foreach --all run artifacts
+          npm run -ws artifacts
       - name: List npm
         run: ls -R ./packages/*/scripts/npm
         shell: bash
