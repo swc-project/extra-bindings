@@ -35,7 +35,7 @@
   },
   "scripts": {
     "prepare": "husky install",
-    "build": "yarn workspaces foreach --all run build"
+    "build": "npm -ws run build"
   },
   "devDependencies": {
     "@taplo/cli": "^0.3.2",
