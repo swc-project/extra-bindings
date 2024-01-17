@@ -1,6 +1,6 @@
 {
   "name": "@swc/bindings",
-  "packageManager": "yarn@3.2.3",
+  "packageManager": "yarn@4.0.2",
   "version": "1.0.0",
   "main": "index.js",
   "repository": "git@github.com:swc-project/swc.git",
@@ -35,7 +35,8 @@
     "url": "https://opencollective.com/swc"
   },
   "scripts": {
-    "prepare": "husky install && git config feature.manyFiles true"
+    "prepare": "husky install",
+    "build": "yarn workspaces foreach --all run build"
   },
   "devDependencies": {
     "@taplo/cli": "^0.3.2",
