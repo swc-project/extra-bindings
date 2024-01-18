@@ -28,11 +28,11 @@ jobs:
           - host: macos-latest
             target: x86_64-apple-darwin
             build: |
-              npm run build:all
+              npm -ws run build
           - host: windows-latest
             build: |
               export CARGO_PROFILE_RELEASE_LTO=false
-              npm run build:all
+              npm -ws run build
             target: x86_64-pc-windows-msvc
           - host: windows-latest
             # use npm to run test, because of corepack link the yarn with x64 Node.js
@@ -54,7 +54,7 @@ jobs:
             build: >-
               set -e &&
               export CARGO_PROFILE_RELEASE_LTO=false &&
-              RUSTFLAGS='-C target-feature=+sse2 -C target-feature=-crt-static' npm run build:all
+              RUSTFLAGS='-C target-feature=+sse2 -C target-feature=-crt-static' npm -ws run build
           - host: macos-latest
             target: aarch64-apple-darwin
             build: |
