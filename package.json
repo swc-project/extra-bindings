@@ -35,7 +35,6 @@
   },
   "scripts": {
     "prepare": "husky install",
-    "build:all": "npm -ws run build",
     "test": "echo 'no test at the moment'"
   },
   "devDependencies": {
