@@ -1,6 +1,5 @@
 {
   "name": "@swc/bindings",
-  "packageManager": "yarn@4.0.2",
   "version": "1.0.0",
   "main": "index.js",
   "repository": "git@github.com:swc-project/swc.git",
@@ -36,7 +35,7 @@
   },
   "scripts": {
     "prepare": "husky install",
-    "build": "yarn workspaces foreach --all run build"
+    "test": "echo 'no test at the moment'"
   },
   "devDependencies": {
     "@taplo/cli": "^0.3.2",

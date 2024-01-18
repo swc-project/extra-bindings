@@ -31,7 +31,7 @@ node_modules/
 *.html
 !crates/swc_html*/**/*.html
 *.svg
-package-lock.json
+yarn.lock
 *.data
 *.old
 *.stacks
