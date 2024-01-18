@@ -38,7 +38,7 @@ jobs:
             # use npm to run test, because of corepack link the yarn with x64 Node.js
             build: |
               export CARGO_PROFILE_RELEASE_LTO=false
-              npm run build:all --target i686-pc-windows-msvc
+              npm -ws run build --target i686-pc-windows-msvc
               npm test
             target: i686-pc-windows-msvc
           - host: ubuntu-latest
@@ -46,7 +46,7 @@ jobs:
             docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian
             build: >-
               set -e &&
-              unset CC_x86_64_unknown_linux_gnu && unset CC && npm run build:all --target x86_64-unknown-linux-gnu
+              unset CC_x86_64_unknown_linux_gnu && unset CC && npm -ws run build --target x86_64-unknown-linux-gnu
           - host: ubuntu-latest
             target: x86_64-unknown-linux-musl
             # musl build is slow, let's disable the LTO
@@ -63,7 +63,7 @@ jobs:
               export CXX=$(xcrun -f clang++);
               SYSROOT=$(xcrun --sdk macosx --show-sdk-path);
               export CFLAGS="-isysroot $SYSROOT -isystem $SYSROOT";
-              npm run build:all --target aarch64-apple-darwin
+              npm -ws run build --target aarch64-apple-darwin
           - host: ubuntu-latest
             target: aarch64-unknown-linux-gnu
             docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian-aarch64
@@ -72,11 +72,11 @@ jobs:
               export JEMALLOC_SYS_WITH_LG_PAGE=16 &&
               rustup target add aarch64-unknown-linux-gnu &&
               export CC_aarch64_unknown_linux_gnu=/usr/aarch64-unknown-linux-gnu/bin/aarch64-unknown-linux-gnu-gcc &&
-              npm run build:all --target aarch64-unknown-linux-gnu
+              npm -ws run build --target aarch64-unknown-linux-gnu
           - host: ubuntu-latest
             target: armv7-unknown-linux-gnueabihf
             build: |
-              npm run build:all --target armv7-unknown-linux-gnueabihf --zig
+              npm -ws run build --target armv7-unknown-linux-gnueabihf --zig
           - host: ubuntu-latest
             target: aarch64-unknown-linux-musl
             downloadTarget: aarch64-unknown-linux-musl
@@ -85,14 +85,14 @@ jobs:
               export JEMALLOC_SYS_WITH_LG_PAGE=16 &&
               rustup toolchain install $(cat ./rust-toolchain) &&
               rustup target add aarch64-unknown-linux-musl &&
-              env RUSTFLAGS='-C target-feature=-crt-static' npm run build:all --target=aarch64-unknown-linux-musl
+              env RUSTFLAGS='-C target-feature=-crt-static' npm -ws run build --target=aarch64-unknown-linux-musl
           - host: windows-latest
             target: aarch64-pc-windows-msvc
             # Disable `LTO` and increase `codegen-units` to avoid llvm `OOM` on GitHub Actions.
             build: |
               export CARGO_PROFILE_RELEASE_CODEGEN_UNITS=256
               export CARGO_PROFILE_RELEASE_LTO=false
-              npm run build:all --target aarch64-pc-windows-msvc
+              npm -ws run build --target aarch64-pc-windows-msvc
 
     name: stable - ${{ matrix.settings.target }} - node@16
     runs-on: ${{ matrix.settings.host }}
@@ -230,7 +230,7 @@ jobs:
         run: ls -R .
         shell: bash
       - name: Build TypeScript
-        run: npm run build:all:ts -ws
+        run: npm -ws run build:ts -ws
       - name: Test bindings
         run: npm test -ws
   test-linux-x64-gnu-binding:
@@ -270,7 +270,7 @@ jobs:
         run: ls -R .
         shell: bash
       - name: Build TypeScript
-        run: npm run build:all:ts -ws
+        run: npm -ws run build:ts -ws
       - name: Test bindings
         run: docker run --rm -v $(pwd):/swc -w /swc node:${{ matrix.node }}-slim npm test -ws
   test-linux-x64-musl-binding:
@@ -310,7 +310,7 @@ jobs:
         run: ls -R .
         shell: bash
       - name: Build TypeScript
-        run: npm run build:all:ts -ws
+        run: npm -ws run build:ts -ws
       - name: Test bindings
         run: docker run --rm -v $(pwd):/swc -w /swc node:${{ matrix.node }}-alpine npm test -ws
   test-linux-aarch64-gnu-binding:
@@ -343,7 +343,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Build TypeScript
-        run: npm run build:all:ts -ws
+        run: npm -ws run build:ts -ws
       - name: Setup and run tests
         uses: addnab/docker-run-action@v3
         with:
@@ -377,7 +377,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Build TypeScript
-        run: npm run build:all:ts -ws
+        run: npm -ws run build:ts -ws
       - name: Setup and run tests
         uses: addnab/docker-run-action@v3
         with:
@@ -417,7 +417,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Build TypeScript
-        run: npm run build:all:ts -ws
+        run: npm -ws run build:ts -ws
       - name: Setup and run tests
         uses: addnab/docker-run-action@v3
         with:
@@ -460,7 +460,7 @@ jobs:
         run: npm ci
 
       - name: Build typescript files
-        run: npm run build:all:ts -ws
+        run: npm -ws run build:ts -ws
 
       - name: Download all artifacts
         uses: actions/download-artifact@v3
