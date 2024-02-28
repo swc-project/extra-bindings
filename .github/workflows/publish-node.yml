@@ -18,6 +18,7 @@ on:
       - main
     tags:
       - v*
+  pull_request:
 
 jobs:
   build:
