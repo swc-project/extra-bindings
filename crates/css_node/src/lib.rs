@@ -245,103 +245,105 @@ impl Task for MinifyTask {
 }
 
 fn minify_inner(code: &str, opts: MinifyOptions) -> anyhow::Result<TransformOutput> {
-    try_with(|cm, handler| {
-        let filename = match opts.filename {
-            Some(v) => FileName::Real(v.into()),
-            None => FileName::Anon,
-        };
+    swc_common::GLOBALS.set(&swc_common::Globals::new(), || {
+        try_with(|cm, handler| {
+            let filename = match opts.filename {
+                Some(v) => FileName::Real(v.into()),
+                None => FileName::Anon,
+            };
 
-        let fm = cm.new_source_file(filename, code.into());
+            let fm = cm.new_source_file(filename, code.into());
 
-        let mut errors = vec![];
-        let ss = swc_css_parser::parse_file::<swc_css_ast::Stylesheet>(
-            &fm,
-            None,
-            swc_css_parser::parser::ParserConfig {
-                allow_wrong_line_comments: false,
-                css_modules: false,
-                legacy_nesting: false,
-                legacy_ie: false,
-            },
-            &mut errors,
-        );
+            let mut errors = vec![];
+            let ss = swc_css_parser::parse_file::<swc_css_ast::Stylesheet>(
+                &fm,
+                None,
+                swc_css_parser::parser::ParserConfig {
+                    allow_wrong_line_comments: false,
+                    css_modules: false,
+                    legacy_nesting: false,
+                    legacy_ie: false,
+                },
+                &mut errors,
+            );
 
-        let mut ss = match ss {
-            Ok(v) => v,
-            Err(err) => {
-                err.to_diagnostics(handler).emit();
+            let mut ss = match ss {
+                Ok(v) => v,
+                Err(err) => {
+                    err.to_diagnostics(handler).emit();
+
+                    for err in errors {
+                        err.to_diagnostics(handler).emit();
+                    }
+
+                    bail!("failed to parse input as stylesheet")
+                }
+            };
+
+            let mut returned_errors = None;
+
+            if !errors.is_empty() {
+                returned_errors = Some(Vec::with_capacity(errors.len()));
 
                 for err in errors {
-                    err.to_diagnostics(handler).emit();
+                    let mut buf = vec![];
+
+                    err.to_diagnostics(handler).buffer(&mut buf);
+
+                    for i in buf {
+                        returned_errors.as_mut().unwrap().push(Diagnostic {
+                            level: i.level.to_string(),
+                            message: i.message(),
+                            span: serde_json::to_value(&i.span)?,
+                        });
+                    }
+                }
+            }
+
+            swc_css_minifier::minify(&mut ss, Default::default());
+
+            let mut src_map = vec![];
+            let code = {
+                let mut buf = String::new();
+                {
+                    let wr = BasicCssWriter::new(
+                        &mut buf,
+                        if opts.source_map {
+                            Some(&mut src_map)
+                        } else {
+                            None
+                        },
+                        BasicCssWriterConfig {
+                            indent_type: IndentType::Space,
+                            indent_width: 0,
+                            linefeed: LineFeed::LF,
+                        },
+                    );
+                    let mut gen = CodeGenerator::new(wr, CodegenConfig { minify: true });
+
+                    gen.emit(&ss).context("failed to emit")?;
                 }
 
-                bail!("failed to parse input as stylesheet")
-            }
-        };
+                buf
+            };
 
-        let mut returned_errors = None;
-
-        if !errors.is_empty() {
-            returned_errors = Some(Vec::with_capacity(errors.len()));
-
-            for err in errors {
+            let map = if opts.source_map {
+                let map = cm.build_source_map(&src_map);
                 let mut buf = vec![];
+                map.to_writer(&mut buf)
+                    .context("failed to generate sourcemap")?;
+                Some(String::from_utf8(buf).context("the generated source map is not utf8")?)
+            } else {
+                None
+            };
 
-                err.to_diagnostics(handler).buffer(&mut buf);
-
-                for i in buf {
-                    returned_errors.as_mut().unwrap().push(Diagnostic {
-                        level: i.level.to_string(),
-                        message: i.message(),
-                        span: serde_json::to_value(&i.span)?,
-                    });
-                }
-            }
-        }
-
-        swc_css_minifier::minify(&mut ss, Default::default());
-
-        let mut src_map = vec![];
-        let code = {
-            let mut buf = String::new();
-            {
-                let wr = BasicCssWriter::new(
-                    &mut buf,
-                    if opts.source_map {
-                        Some(&mut src_map)
-                    } else {
-                        None
-                    },
-                    BasicCssWriterConfig {
-                        indent_type: IndentType::Space,
-                        indent_width: 0,
-                        linefeed: LineFeed::LF,
-                    },
-                );
-                let mut gen = CodeGenerator::new(wr, CodegenConfig { minify: true });
-
-                gen.emit(&ss).context("failed to emit")?;
-            }
-
-            buf
-        };
-
-        let map = if opts.source_map {
-            let map = cm.build_source_map(&src_map);
-            let mut buf = vec![];
-            map.to_writer(&mut buf)
-                .context("failed to generate sourcemap")?;
-            Some(String::from_utf8(buf).context("the generated source map is not utf8")?)
-        } else {
-            None
-        };
-
-        Ok(TransformOutput {
-            code,
-            map,
-            errors: returned_errors,
-            deps: Default::default(),
-            modules_mapping: Default::default(),
+            Ok(TransformOutput {
+                code,
+                map,
+                errors: returned_errors,
+                deps: Default::default(),
+                modules_mapping: Default::default(),
+            })
         })
     })
 }
